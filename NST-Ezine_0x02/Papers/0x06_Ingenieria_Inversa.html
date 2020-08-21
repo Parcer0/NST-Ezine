@@ -1,0 +1,335 @@
+<html>
+
+<head>
+<title>Funciones Inseguras en C</title>
+<style>
+body{
+	  filter:alpha(opacity=90);
+      -moz-opacity:0.9;
+      opacity:0.9;
+      -khtml-opacity:0.9;
+      }
+code {
+    background-color: #FFFFF0;
+    color: #000000;
+	border: 1px solid #FFFFFF;
+	font-family: Verdana;
+	font-size: 10px;
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	display: block;
+	text-align: left;
+	vertical-align: top;
+	cell-padding: 4;
+	letter-spacing: normal;
+}
+span {
+	color: #00FF00;
+	font-size: 18px;
+	font-weight: bold;
+	text-decoration: underline;
+}
+a {
+	color: #CCCCCC;	
+}
+a:hover {
+	color: #EEEEEE;
+	font-weight: bold;
+}
+a:visited {
+	color: #CCCCCC;	
+}
+a:active {
+	color: #CCCCCC;	
+}
+</style>
+</head>
+
+<body bgcolor=#000000 text=#FFFFFF>
+
+<p><font face="Verdana" size="1">/*<br>
+Name: Ingenieria Inversa<br>
+Copyright: NeoSecurityTeam<br>
+Author: HaCkZaTaN<br>
+Date: 24/08/05<br>
+Description: Aqui explicare como:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1) Hacer un Crackme.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+2) Desamblarlo y Entenderlo.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+3) Sacar un pass correcto para el user -=NST=-.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+4) Hacer un KeyGen.<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Herramientas:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1) gcc<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+2) OllyDbg, gdb<br>
+*/<br>
+<br>
+<br>
+Empezaremos Haciendo un Crackme.<br>
+Lo Basico de un Crackme es:<br>
+.User<br>
+.Pass<br>
+.Algoritmo de Encriptacion<br>
+.Serial Bueno<br>
+<br>
+</font>
+<code><font face="Verdana" size="1">/* CrackMe.c */<br>
+#include &lt;stdio.h&gt; /* I/O */<br>
+#include &lt;string.h&gt; /* strlen() */<br>
+#include &lt;stdlib.h&gt; /* exit() */<br>
+<br>
+int main(int argc, char *argv[])<br>
+{<br>
+char UserName[255]; /* Declaramos Nuestro User */<br>
+long CorrectSerial = 0, SerialNumber = 0, i =0; /* Declaramos el Pass_Bueno, y 
+el Pass_Malo */<br>
+<br>
+printf(&quot;Enter Your UserName: &quot;); /* Pedimos por un UserName */<br>
+gets(UserName); /* Lo guardamos */<br>
+printf(&quot;Enter Your SerialNumber: &quot;); /* Pedimos por un Passwoord */<br>
+scanf(&quot;%d&quot;, &amp;SerialNumber); /* Lo guardamos */<br>
+<br>
+for (; i &lt; strlen(UserName); i++) /* Este bucle se Itera las veces que 
+strlen(UserName) le diga */<br>
+{<br>
+CorrectSerial += UserName[i] + 0xBebeDead + 9 ^ 0xDeadBeef; /* Simple Algortimo 
+de Encriptacion */<br>
+}<br>
+<br>
+if(CorrectSerial != SerialNumber) /* Si el seria correcto no es igual al serial 
+introducido Salimos */<br>
+{<br>
+puts(&quot;\n[!] Serial Invalido no le agamos al Brute Force OK !\n&quot;);<br>
+exit(-1);<br>
+}<br>
+<br>
+else puts(&quot;\nEres bueno con esto!!&quot;); /* Si el serial es bueno nos muesta un 
+mensaje diciendonos q esta bien */<br>
+<br>
+exit(-1); /* Salimos */<br>
+}</font></code><font face="Verdana" size="1"><br>
+<br>
+Bueno como vemos Este es un pequeno Crackme sin protecciones por el estilo ni 
+nada raro.<br>
+Lo compilamos gcc CrackMe.c -o Crackme.exe (Para Linux lo explicare mas adelante)<br>
+Lo Corremos:<br>
+<br>
+</font>
+<code><font face="Verdana" size="1">E:\0x06_Ingenieria_Inversa&gt;CrackMe.exe<br>
+Enter Your UserName: -=NST=-<br>
+Enter Your SerialNumber: 31337</font></code><font face="Verdana" size="1"><br>
+<br>
+[!] Serial Invalido no le agamos al Brute Force OK !<br>
+<br>
+Mmm interesante no? xD<br>
+<br>
+Ahora desamblemoslo para en un futuro entenderlo y hacer crackearlo.<br>
+<br>
+Cargamos el CrackMe.exe en OllyDbg.<br>
+A mi me paro en:<br>
+</font>
+<code><font face="Verdana" size="1">00401220 &gt; $ 55 PUSH EBP<br>
+00401221 . 89E5 MOV EBP, ESP<br>
+00401223 . 83EC 08 SUB ESP, 8<br>
+00401226 . C70424 010000&gt;MOV DWORD PTR SS:[ESP], 1</font></code><font face="Verdana" size="1"><br>
+<br>
+De por si estas primeras linea de un PE es para meter la info al stack.<br>
+Ahora como hacemos para que Olly Nos pare donde nosotros queramos a la hora de 
+entrar un user y pass.<br>
+Bueno como no programamos con API's entonces no podemos buscar APIs pero si 
+podemos buscar funciones q nos ayudaran mucho.<br>
+Pulsamos Ctrl-N. Y leemos todo lo que vemos ahy y vemos que encontramos un gets 
+y un scanf que originalmente se utilizan para<br>
+guardar strings en punteros. Este es un gran comienzo. Colocamos un BPX en los 
+dos nombres<br>
+<br>
+</font>
+<code><font face="Verdana" size="1">Name=msvcrt.gets<br>
+Name=msvcrt.scanf</font></code><font face="Verdana" size="1"><br>
+<br>
+Como colocamos un BP?<br>
+Damos Click derecho en msvcrt.scanf y damos click en &quot;Set BreakPoint in Every 
+Reference&quot;<br>
+Pulsamos F9 (Run). Y Olly para en:<br>
+<br>
+004012CF . E8 1C060000 CALL &lt;JMP.&amp;msvcrt.gets&gt; ; ||\gets<br>
+<br>
+Pulsamos F8 para pasar por encima de la call<br>
+y nos pide un UserName.Buffer<br>
+Introducimos: -=NST=-<br>
+y Olly Vuelve a parar ahora no en gets si no en scanf<br>
+<br>
+</font>
+<code><font face="Verdana" size="1">004012F1 . E8 EA050000 CALL &lt;JMP.&amp;msvcrt.scanf&gt; ; \scanf</font></code><font face="Verdana" size="1"><br>
+Coloquemos otro BP abajo de este Call:<br>
+<br>
+</font>
+<code><font face="Verdana" size="1">004012F6 . 8D76 00 LEA ESI, DWORD PTR DS:[ESI]</font></code><font face="Verdana" size="1"><br>
+<br>
+Pulsemos F9. Nos pide un Serial. Introduscamos: 31337<br>
+Y Olly para justo en &quot;004012F6&quot;.<br>
+Empezemos a tracear haber q encontramos de Interesante:<br>
+<br>
+</font>
+<code><font face="Verdana" size="1">004012F6 . 8D76 00 LEA ESI, DWORD PTR DS:[ESI] ; ESI Carga nuestro UserName. -=NST=-<br>
+004012F9 . 8DBC27 000000&gt;LEA EDI, DWORD PTR DS:[EDI] ; EDI Contiene nuestro 
+Serial Bueno<br>
+00401300 &gt; 89F1 MOV ECX, ESI ; Mueve ECX a ESI. (Realmente esta parte del codigo 
+no hace mucho.<br>
+00401302 . 8DB426 000000&gt;LEA ESI, DWORD PTR DS:[ESI] ; ESI Carga nuestro 
+UserName. -=NST=-<br>
+00401309 . 8DBC27 000000&gt;LEA EDI, DWORD PTR DS:[EDI] ; EDI Contiene nuestro 
+Serial Bueno<br>
+00401310 &gt; 8B01 MOV EAX, DWORD PTR DS:[ECX]<br>
+00401312 . 83C1 04 ADD ECX, 4<br>
+00401315 . 8D90 FFFEFEFE LEA EDX, DWORD PTR DS:[EAX+FEFEFEFF]<br>
+0040131B . F7D0 NOT EAX<br>
+0040131D . 21C2 AND EDX, EAX<br>
+0040131F . 89D0 MOV EAX, EDX<br>
+00401321 . 25 80808080 AND EAX, 80808080<br>
+00401326 .^ 74 E8 JE SHORT CrackMe.00401310<br>
+00401328 . 81E2 80800000 AND EDX, 8080<br>
+0040132E . 75 06 JNZ SHORT CrackMe.00401336<br>
+00401330 . C1E8 10 SHR EAX, 10<br>
+00401333 . 83C1 02 ADD ECX, 2<br>
+00401336 &gt; 00C0 ADD AL, AL<br>
+00401338 . 83D9 03 SBB ECX, 3 ; Aqui vemos en el Stack un codigo ASCII raro. 
+pero no es nada del otro mundo.<br>
+0040133B . 29F1 SUB ECX, ESI<br>
+0040133D . 39CB CMP EBX, ECX<br>
+0040133F . 73 19 JNB SHORT CrackMe.0040135A<br>
+00401341 . 0FBE8C2B E8FE&gt;MOVSX ECX, BYTE PTR DS:[EBX+EBP-118] ; Movemos 
+[EBP-118] a ECX. Osea q estamos moviendo el primer caracter del Stack &quot;-&quot;<br>
+00401349 . 43 INC EBX ; un Contador y esta seteado a 0<br>
+0040134A . 81E9 4A214141 SUB ECX, 4141214A ; ecx -= 4141214A<br>
+00401350 . 81F1 EFBEADDE XOR ECX, DEADBEEF ; ecx ^= DEADBEEF<br>
+00401356 . 01CF ADD EDI, ECX ; edi += ecx<br>
+00401358 .^ EB A6 JMP SHORT CrackMe.00401300<br>
+0040135A &gt; 3BBD E4FEFFFF CMP EDI, DWORD PTR SS:[EBP-11C] ; |Comparamos si 
+[EBP-11C] es igua a EDI.<br>
+00401360 . 74 18 JE SHORT CrackMe.0040137A ; |Si no es igual nos lleva aa 
+0040137A y si es bueno nos muestra el mensaje q es bueno<br>
+00401362 . C70424 343040&gt;MOV DWORD PTR SS:[ESP], CrackMe.0040&gt;; |ASCII 0A,&quot;[!] 
+Serial&quot;<br>
+00401369 &gt; E8 62050000 CALL &lt;JMP.&amp;msvcrt.puts&gt; ; |\puts<br>
+0040136E . C70424 FFFFFF&gt;MOV DWORD PTR SS:[ESP], -1 ; |<br>
+00401375 . E8 46050000 CALL &lt;JMP.&amp;msvcrt.exit&gt; ; \exit<br>
+0040137A &gt; C70424 6B3040&gt;MOV DWORD PTR SS:[ESP], CrackMe.0040&gt;; ASCII 0A,&quot;Eres 
+bueno&quot;<br>
+00401381 .^ EB E6 JMP SHORT CrackMe.00401369</font></code><font face="Verdana" size="1"><br>
+<br>
+Con la Informacion que tenemos creo que podemos hacer un Pequenos KeyGen para 
+este simple algoritmo.<br>
+<br>
+</font>
+<code><font face="Verdana" size="1">/* KeyGen.c */<br>
+#include &lt;stdio.h&gt; /* I/O */<br>
+<br>
+int main(int argc, char *argv[])<br>
+{<br>
+char ecx[255]; /* Declaramos nuestro User */<br>
+long ebx, edi=0; /* Un Contador y nustro serial correcto segun Olly */<br>
+<br>
+printf(&quot;Enter Your UserName: &quot;);<br>
+gets(ecx);<br>
+<br>
+for(ebx = 0; ebx &lt; strlen(ecx); ebx++) edi += ecx[ebx] - 0x4141214A ^ 
+0xDeadBeef;<br>
+<br>
+printf(&quot;%d&quot;, edi);<br>
+exit(-1);<br>
+}</font></code><font face="Verdana" size="1"><br>
+<br>
+Lo compilamos: gcc KeyGen.c -o KeyGen.exe<br>
+Lo Corremos:<br>
+<br>
+</font>
+<code><font face="Verdana" size="1">E:\0x06_Ingenieria_Inversa&gt;KeyGen.exe<br>
+Enter Your UserName: -=NST=-<br>
+-1601722874<br>
+E:\0x06_Ingenieria_Inversa&gt;</font></code><font face="Verdana" size="1"><br>
+<br>
+Introduscamos ese password en el Crackme haber si si funciona.<br>
+<br>
+</font>
+<code><font face="Verdana" size="1">E:\0x06_Ingenieria_Inversa&gt;CrackMe.exe<br>
+Enter Your UserName: -=NST=-<br>
+Enter Your SerialNumber: -1601722874</font></code><font face="Verdana" size="1"><br>
+<br>
+Eres bueno con esto!!<br>
+<br>
+w0w Funciona =]</font></p>
+<p><font face="Verdana" size="1">Ahora en Linux</font></p>
+
+
+
+
+<p><code><font face="Verdana" size="1">root@NeoSecurityTeam:/home/hackzatan# ./CrackMe<br>
+Enter Your UserName: -=NST=-<br>
+Enter Your SerialNumber: 31337<br>
+<br>
+[!] Serial Invalido no le agamos al Brute Force OK !<br>
+<br>
+root@NeoSecurityTeam:/home/hackzatan# gdb ./CrackMe<br>
+GNU gdb 6.3<br>
+Copyright 2004 Free Software Foundation, Inc.<br>
+GDB is free software, covered by the GNU General Public License, and you are<br>
+welcome to change it and/or distribute copies of it under certain conditions.<br>
+Type &quot;show copying&quot; to see the conditions.<br>
+There is absolutely no warranty for GDB. Type &quot;show warranty&quot; for details.<br>
+This GDB was configured as &quot;i486-slackware-linux&quot;...Using host libthread_db 
+library &quot;/lib/libthread_db.so.1&quot;.<br>
+<br>
+(gdb) r<br>
+Starting program: /home/hackzatan/x<br>
+Enter Your UserName: -=NST=-<br>
+Enter Your SerialNumber: 31337<br>
+<br>
+[!] Serial Invalido no le agamos al Brute Force OK !<br>
+<br>
+<br>
+Program exited with code 0377.<br>
+(gdb) disas main<br>
+Dump of assembler code for function main:<br>
+-=foo=-<br>
+0x08048540 &lt;main+172&gt;: movsbl (%eax),%eax<br>
+0x08048543 &lt;main+175&gt;: sub $0x4141214a,%eax<br>
+0x08048548 &lt;main+180&gt;: mov %eax,%edx<br>
+0x0804854a &lt;main+182&gt;: xor $0x4141214a,%edx<br>
+0x08048550 &lt;main+188&gt;: lea 0xfffffef4(%ebp),%eax<br>
+0x08048556 &lt;main+194&gt;: add %edx,(%eax)<br>
+0x08048558 &lt;main+196&gt;: lea 0xfffffeec(%ebp),%eax<br>
+0x0804855e &lt;main+202&gt;: incl (%eax)<br>
+-=foo=-<br>
+End of assembler dump.<br>
+(gdb)</font></code></p>
+<p><font face="Verdana" size="1">Podemos Ver q es lo mismo <br>
+Cargamos La primera letra en EAX<br>
+le restamos $0x4141214a<br>
+lo movemos a edx<br>
+xoreamos edx con $0x4141214a<br>
+add %edx,(%eax) ; sumamos el valor de edx a eax<br>
+incl(%eax) seria el contador..<br>
+<br>
+Esta Sintaxis es rara para los usuarios de windows por que estan acostumbrado a 
+la Intel pero esta es AT&amp;T Sintax</font></p>
+
+
+
+
+
+<p><font face="Verdana" size="1">Irc.GigaChat.Net #NST</font></p>
+
+
+
+
+
+
+</html>

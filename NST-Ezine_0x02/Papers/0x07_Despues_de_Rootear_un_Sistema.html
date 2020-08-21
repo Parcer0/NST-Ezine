@@ -1,0 +1,568 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+	<TITLE>Despu&eacute;s de Rootear un Sistema - daemon21 [NST]</TITLE>
+	<STYLE>
+	<!--
+		TD P { color: #FFFFFF }
+		P { color: #FFFFFF }
+		A:link { color: #006699; font-family: "Verdana"; font-size: 9pt; text-decoration: none }
+		A:visited { color: #006699 }
+		body{
+	  filter:alpha(opacity=90);
+      -moz-opacity:0.9;
+      opacity:0.9;
+      -khtml-opacity:0.9;
+      }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="es-CL" TEXT="#FFFFFF" LINK="#006699" VLINK="#006699" BGCOLOR="#000000" DIR="LTR">
+<P ALIGN=CENTER><FONT SIZE=1 FACE="Verdana"><B>[DESPU&Eacute;S
+DE ROOTEAR UN SISTEMA]</B></FONT></P>
+<P><font face="Verdana" size="1"><BR><BR>
+</font>
+</P>
+<UL>
+	<LI><P><A HREF="#MANTENIENDO PRIVILEGIOS ROOT"><B><FONT SIZE=1>MANTENIENDO
+	PRIVILEGIOS ROOT</FONT></B></A><font face="Verdana" size="1"><BR></font><A HREF="#[+] Introducci&oacute;n1">
+	<font size="1">[+]
+	Introducci&oacute;n</font></A><font face="Verdana" size="1"><BR></font><A HREF="#[+] Modificar passwd">
+	<font size="1">[+]
+	Modificar passwd</font></A><font face="Verdana" size="1"><BR></font><A HREF="#[+] modificar rhost">
+	<font size="1">[+] Modificar
+	.rhost</font></A><font face="Verdana" size="1"><BR></font><A HREF="#[+] Set UID Shell (sushi)">
+	<font size="1">[+] Set UID Shell (sushi)</font></A><font face="Verdana" size="1"><br>
+	</font>
+	<a href="#Backdoor"><font size="1">[+] Backdoors</font></a><font face="Verdana" size="1"><BR>
+	</font><A HREF="#[+] Troyanos"><font size="1">[+] Troyanos</font></A><font face="Verdana" size="1"><BR>
+	</font>
+	</P>
+	</UL>
+<UL>
+	<LI><P><A HREF="#BORRANDO NUESTRAS HUELLAS"><B><font size="1">BORRANDO NUESTRAS
+	HUELLAS</font></B></A><font face="Verdana" size="1"><BR></font><A HREF="#introducci&oacute;n2">
+	<font size="1">[+]
+	Introducci&oacute;n</font></A><font face="Verdana" size="1"><BR></font><A HREF="#[+] Ficheros Crit&iacute;cos, Logs">
+	<font size="1">[+]
+	Ficheros Cr&iacute;ticos, Logs</font></A><font face="Verdana" size="1"><BR>
+	</font><A HREF="#[+]Zappers"><font size="1">[+]
+	Zappers</font></A></P>
+</UL>
+<UL>
+	<LI><P><A HREF="#ROOTKITS"><B><font size="1">ROOTKITS</font></B></A><font face="Verdana" size="1"><BR>
+	</font><A HREF="#[+] Introducci&oacute;n3"><font size="1">[+]
+	Introducci&oacute;n</font></A><font face="Verdana" size="1"><BR></font><A HREF="#[+] &iquest;C&oacute;mo Funcionan">
+	<font size="1">[+]
+	&iquest;C&oacute;mo Funcionan?</font></A><font face="Verdana" size="1"><BR>
+	</font><A HREF="#[+] Algunos Rootkits"><font size="1">[+]
+	Algunos Rootkits</font></A></P>
+</UL>
+<UL>
+	<LI><P><A HREF="#CONCLUSION"><B><font size="1">CONCLUSI&Oacute;N</font></B></A></P>
+</UL>
+<UL>
+	<LI><P><A HREF="#DESPEDIDA"><B><font size="1">DESPEDIDA</font></B></A><font face="Verdana" size="1"><BR><BR><BR>&nbsp; 
+	</font> 
+	</P>
+</UL>
+<hr color="#FFFFFF">
+<P ALIGN=CENTER><font face="Verdana" size="1"><A NAME="MANTENIENDO PRIVILEGIOS ROOT"></A>&nbsp;</font><B><FONT COLOR="#006699" FACE="Verdana" SIZE="1">MANTENIENDO
+PRIVILEGIOS ROOT</FONT></B></P>
+<P ALIGN=JUSTIFY><font face="Verdana" size="1"><BR><BR>
+</font>
+</P>
+<P ALIGN=JUSTIFY><font face="Verdana"><font size="1"><BR></font><B><FONT SIZE=1>[+]
+Introducci&oacute;n <BR><BR><BR><BR>&nbsp;&nbsp;&nbsp; </FONT> </B>
+<font size="1">Ya
+conseguimos una shell mediante cualquier m&eacute;todo, la rooteamos
+con el exploit correspondiente, pero hasta ah&iacute; no llega
+nuestro trabajo, si nos desconectamos del sistema y nos volvemos a
+conectar tendr&iacute;amos que rootearnos otra vez, aumentando los
+riesgos a ser pillados. Para no tener que rootear cada vez que
+entramos, existen varias t&eacute;cnicas que sirven para
+autentificarnos como root cada vez que nos logeamos, aqu&iacute;
+hablaremos de algunas ;). <B><BR></B><BR><BR>
+</font></font>
+</P>
+<P><font face="Verdana" size="1"><BR><BR>
+</font>
+</P>
+<P ALIGN=JUSTIFY><font face="Verdana"><B><font size="1"><BR>[+]
+Modificar passwd <BR><BR>&nbsp;&nbsp;&nbsp;</font></B><font size="1"> La informaci&oacute;n
+de las cuentas de los usuarios se encuentra en el fichero passwd, que
+generalmente se ubica en /etc/passwd. Es un archivo de texto simple,
+el cual se compone de siete campos y est&aacute; estructurado as&iacute;: </font>
+<B><font size="1"><BR>&nbsp;</font></B></font></P>
+<CENTER>
+	<TABLE WIDTH=493 BORDER=1 BORDERCOLOR="#c0c0c0" CELLPADDING=2 CELLSPACING=0 BGCOLOR="#00cc99">
+		<COL WIDTH=487>
+		<TR>
+			<TD WIDTH=487 BGCOLOR="#808080">
+				<P ALIGN=CENTER><FONT SIZE=1 FACE="Verdana" COLOR="#ffffff">user:pass:UID:GID:info_del_user:directorio_de_trabajo:shell
+				</FONT>
+				</P>
+			</TD>
+		</TR>
+	</TABLE>
+</CENTER>
+<P ALIGN=JUSTIFY><FONT FACE="Verdana"><B><font size="1"><BR>&nbsp;&nbsp;&nbsp; 
+</font> </B><font size="1">El
+primer campo, user, determina el nombre que llevar&aacute; el usuario
+dentro del sistema (obvio). En el campo del pass se ubica el password
+encriptado en CRYPT del usuario, en realidad antiguamente se
+utilizaba as&iacute;; por razones de seguridad ahora dentro de ese
+campo se encuentra una simple x, que significa que el password est&aacute;
+shadow (escondido). En los campos de UID y GID van las
+identificaciones num&eacute;ricas del usuario y de su grupo
+respectivamente. En la parte de info_del_user va cualquier dato
+relativo a la identidad del usuario como tel&eacute;fono u otras
+cosas, este campo es completamente irrelevante y podemos dejarlo
+vac&iacute;o. En directorio_de_trabajo especificamos la ruta de
+acceso a nuestra ubicaci&oacute;n dentro del server, por lo general
+es /home/user. Por &uacute;ltimo nos queda el campo shell, en el cual
+se especifica la ruta de nuestra shell, por lo general es /bin/sh.
+<B><BR><BR>&nbsp;&nbsp;&nbsp; </B>Despu&eacute;s de esta peque&ntilde;a
+introducci&oacute;n al passwd, s&oacute;lo nos queda modificarlo para
+tener una cuenta root. Esto se hace con cualquier editor de textos y
+con permisos de root obviamente. Tambi&eacute;n se puede hacer con el
+comando echo. El passwd modificado nos deber&iacute;a quedar as&iacute;:
+<B><BR>&nbsp;</B></font></FONT><font size="1"></P></font><CENTER>
+	<TABLE WIDTH=50% BORDER=1 BORDERCOLOR="#c0c0c0" CELLPADDING=0 CELLSPACING=0>
+		<TR>
+			<TD WIDTH=100% BGCOLOR="#808080">
+				<P ALIGN=CENTER><FONT SIZE=1 FACE="Verdana" COLOR="#ffffff">daemon21::0:0::/home/daemon21:/bin/sh
+				</FONT>
+				</P>
+			</TD>
+		</TR>
+	</TABLE>
+</CENTER>
+<P ALIGN=JUSTIFY><FONT FACE="Verdana" size="1"><B><BR><BR>&nbsp;&nbsp;&nbsp; </B>Si
+se fijan no he especificado password, por lo que no lo necesitare
+para loguearme... Tambi&eacute;n tengo UID y GID iguales a cero, lo
+que significa que tengo permisos de root y tambi&eacute;n pertenezco
+al grupo root. <BR><BR>&nbsp;&nbsp;&nbsp; Si quieren loguearse con
+password tendr&iacute;an que poner dos signos de exclamaci&oacute;n
+!! en el segundo campo, y luego establecer el password en el archivo
+shadow que generalmente se encuentra en /etc/shadow mediante el
+comando &quot;passwd daemon21&quot;. </FONT>
+</P>
+<P ALIGN=JUSTIFY><font face="Verdana" size="1">&nbsp;&nbsp;&nbsp; La gran
+mayor&iacute;a de las veces, el servidor no acepta conexiones remotas
+como root, pero esto se soluciona f&aacute;cilmente creando dos
+cuentas, una como usuario normal y la otra como root. Esto se hace
+con el fin de que entremos al sistema como usuario normal y despu&eacute;s
+nos cambiemos a root con el comando &quot;su&quot;.</font></P>
+<P ALIGN=JUSTIFY><font face="Verdana" size="1">&nbsp;&nbsp;&nbsp; Uno de los
+problemas de esta t&eacute;cnica es que como el root legitimo y
+nuestro user (en este caso daemon21) tienen el mismo uid, se
+generar&iacute;a un conflicto al intentar entrar los dos al sistema,
+y en consecuencia el root legitimo nos encontrar&iacute;a en seguida.</font></P>
+<P><font face="Verdana" size="1"><BR><BR><BR><BR>
+</font>
+</P>
+<P ALIGN=JUSTIFY><font face="Verdana"><font size="1"><BR></font><B><FONT SIZE=1>[+]
+Modificar .rhost <BR><BR><BR>&nbsp;&nbsp;&nbsp; </FONT> </B><font size="1">Existe un
+servicio llamado RLogin (Remote Login), el cual sirve para iniciar
+una shell remotamente sin la necesidad de ingresar nombres de usuario
+ni password. Este sistema se basa en el archivo .rhost, en el cual se
+configuran todos los usuarios que pueden iniciar la sesi&oacute;n y
+desde donde pueden hacerlo. Cada usuario del sistema puede tener este
+archivo en su directorio, pero el que a nosotros nos interesa es el
+.rhost del root, este se encuentra por defecto generalmente en
+/etc/hosts.equiv o /etc/ssh/shosts.equiv. Su estructura es la
+siguiente: <BR><BR>host1 usuario1 <BR>host2 usuario2 <BR><BR>&nbsp;&nbsp;&nbsp;
+Esto significa que si estamos dentro de host1 y nos llamamos
+usuario1, podemos hacer un rlogin y entrar a la m&aacute;quina sin
+necesidad de ingresar password y con los permisos del owner del
+.rhost. Si le agregamos uno signos + al .rhost, nos quedar&iacute;a
+as&iacute;: <BR><BR>host1 usuario1 <BR>host2 usuario2 <BR>+ + <BR><BR>&nbsp;&nbsp;&nbsp;
+Lo que quiere decir que desde cualquier host nos podemos loguear con
+cualquier usuario. Es decir que si estamos desde nuestra shell
+hacemos un &quot;rlogin victima&quot;, ingresar&iacute;amos
+autom&aacute;ticamente como root. El &uacute;nico gran detalle es que
+cualquiera que ejecute ese comando podr&iacute;a acceder como root;
+pero esto se soluciona restringiendo el .rhost, y en lugar de poner
+signos m&aacute;s (+)<BR><BR><BR>
+</font></font>
+</P>
+<P ALIGN=JUSTIFY><font face="Verdana" size="1">&nbsp;&nbsp;&nbsp; Para poder
+utilizar este m&eacute;todo, el Rlogin debe estar correctamente
+configurado en /etc/ssh/ssh_config. Para obtener m&aacute;s
+informaci&oacute;n basta ejecutar &ldquo;man ssh&rdquo;.</font></P>
+<P ALIGN=JUSTIFY><FONT FACE="Verdana" size="1"><BR>&nbsp;&nbsp;&nbsp; El
+problema de esta t&eacute;cnica es que si el root legitimo llegase a
+revisar su .rhost, le llamar&iacute;a mucho la atenci&oacute;n ver un
+par de + +, por lo que nos podr&iacute;a pillar f&aacute;cilmente. </FONT>
+</P>
+<P ALIGN=JUSTIFY>&nbsp;</P>
+<P ALIGN=JUSTIFY><font face="Verdana"><B><font size="1"><BR>[+]
+Set UID Shell (sushi) <BR>&nbsp;&nbsp;&nbsp; </font> </B></font>
+</P>
+<P ALIGN=JUSTIFY><font face="Verdana" size="1">&nbsp;&nbsp;&nbsp; La t&eacute;cnica
+del sushi es la m&aacute;s usada y simple. Consiste en hacer una
+copia de la shell del root (obviamente debemos ser root) y guardarla
+en alg&uacute;n lugar de acceso p&uacute;blico. Esta copia debemos
+modificarla ligeramente, tenemos que cambiarle el nombre (para que no
+nos pillen tan f&aacute;cil), configurar el owner como root y
+cambiarle los permisos a 4755. &iquest;C&oacute;mo se hace todo eso?
+simple, s&oacute;lo debemos ejecutar un par de l&iacute;neas: <B><BR>&nbsp;</B></font></P>
+<CENTER>
+	<TABLE WIDTH=539 BORDER=1 BORDERCOLOR="#c0c0c0" CELLPADDING=2 CELLSPACING=0>
+		<COL WIDTH=600>
+		<COL WIDTH=0>
+		<TR>
+			<TD WIDTH=266 BGCOLOR="#808080">
+				<P ALIGN=LEFT><FONT SIZE=1 FACE="Verdana" COLOR="#ffffff">Cp
+				/bin/sh /DirectorioPublico</FONT></P>
+				<P ALIGN=LEFT><FONT SIZE=1 FACE="Verdana" COLOR="#ffffff">Mv
+				sh MiShell </FONT>
+				</P>
+				<P ALIGN=LEFT><FONT SIZE=1 FACE="Verdana" COLOR="#ffffff">chown
+				root MiShell</FONT></P>
+				<P ALIGN=LEFT><FONT SIZE=1 FACE="Verdana" COLOR="#ffffff">chmod
+				4755 MiShell&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</FONT></P>
+			</TD>
+			<TD WIDTH=259 BGCOLOR="#808080">
+				<P><FONT SIZE=1 FACE="Verdana" COLOR="#ffffff">/*
+				Copia la shell a /DirectorioPublico </FONT>
+				</P>
+				<P><FONT SIZE=1 FACE="Verdana" COLOR="#ffffff">/*
+				Cambia el nombre de la shell a mishell</FONT></P>
+				<P><FONT SIZE=1 FACE="Verdana" COLOR="#ffffff">/*
+				Le asigna el owner root a mishell </FONT>
+				</P>
+				<P><font face="Verdana" size="1" COLOR="#ffffff">&nbsp;/*
+				Le cambia los permisos a MiShell </font>
+				</P>
+			</TD>
+		</TR>
+	</TABLE>
+</CENTER>
+<P ALIGN=JUSTIFY><FONT FACE="Verdana"><B><font size="1"><BR>&nbsp;&nbsp;&nbsp; 
+</font> </B><font size="1">Una
+vez hecho este proceso, cada vez que entremos al sistema como usuario
+normal podremos cambiarnos a root solamente ejecutando el fichero
+MiShell. Obviamente hay que cambiarle el nombre por uno menos
+sospechoso :P. Un detalle importante es que, una vez conseguido el
+root, al hacer un id, obtendremos algo as&iacute;: <B><BR>&nbsp;</B></font></FONT><font size="1"></P>
+</font><CENTER>
+	<TABLE WIDTH=50% BORDER=1 BORDERCOLOR="#c0c0c0" CELLPADDING=0 CELLSPACING=0>
+		<TR>
+			<TD WIDTH=100% BGCOLOR="#808080">
+				<P ALIGN=CENTER><FONT SIZE=1 FACE="Verdana" COLOR="#ffffff">uid=21(user)
+				gid=100(user) euid=0(root) groups=100(user) </FONT>
+				</P>
+			</TD>
+		</TR>
+	</TABLE>
+</CENTER>
+<P ALIGN=JUSTIFY><FONT FACE="Verdana" size="1"><B><BR>&nbsp;&nbsp;&nbsp; </B>El
+uid (User Identification) siempre va a ser el del usuario con el cual
+hemos entrado, pero el euid (Efective User Identification) nos
+mostrar&aacute; nuestros privilegios actuales, en este caso root :)
+<BR><BR>&nbsp;&nbsp;&nbsp; Esta t&eacute;cnica tiene dos grandes
+desventajas, cualquier usuario que ejecute ese fichero conseguir&iacute;a
+rootearse, incluso otro &quot;hacker&quot; podr&iacute;a robarnos el
+trabajo. La otra desventaja es que un sushi puede ser f&aacute;cilmente
+detectado por un root legitimo, haciendo un simple &quot;find -perm
+4000&quot;. <B><BR>&nbsp;</B></FONT></P>
+<P ALIGN=JUSTIFY><FONT FACE="Verdana"> <B><font size="1"><BR><BR><a name="Backdoor"></a><BR>[+]
+Backdoors<BR><BR><BR>&nbsp;&nbsp;&nbsp;</font></B><font size="1">Simplemente son
+puertas traseras por las cuales se puede ingresar a un sistema. Son
+programas que permiten que un cliente se conecte al servidor en
+condiciones que normalmente estarían restringidas. &iquest;Qu&eacute;
+significa esto? significa que instalamos un programa en el servidor
+que nos permite conectarnos directamente y sin permiso de nadie. El
+tipo m&aacute;s b&aacute;sico de backdoors funciona dejando un puerto
+a la escucha en el servidor esperando que le enviemos una petici&oacute;n
+de conexi&oacute;n para que nos deje entrar. </font> </FONT>
+</P>
+<P ALIGN=JUSTIFY><font face="Verdana" size="1">&nbsp;&nbsp;&nbsp;El problema es
+que la mayor&iacute;a de los servidores corren tras un firewall, lo
+que significa que en teor&iacute;a pueden interceptar y filtrar todos
+los paquetes TCP/IP, tanto como de entrada como de salida, dejando
+pasar s&oacute;lo lo autorizado. Felizmente, tambi&eacute;n existen
+administradores de redes que piensan que s&oacute;lo importa proteger
+lo que entra al servidor y no lo que sale, porque se supone que todos
+los &ldquo;ataques&ldquo; van desde afuera hacia adentro... Pero no
+es as&iacute;. Podemos hacer que nuestro backdoor intente la conexi&oacute;n
+con nosotros y no viceversa, por lo que el &ldquo;ataque&rdquo;
+vendr&iacute;a desde el interior del servidor hac&iacute;a nosotros y
+el firewall mal configurado lo considerar&iacute;a inofensivo. Este
+tipo de backdoors son conocidos como &ldquo;Reverse backdoors&rdquo;. En nuestra 
+web pueden encontrar varios sources de backdoors, incluidos el NST-Backdoor v0.1 
+desarrollado por HaCkZaTaN.</font></P>
+</p>
+<font face="Verdana" size="1">
+<br><br><br>
+</font>
+<P ALIGN=JUSTIFY><font face="Verdana"><B><font size="1"><BR>[+]
+Troyanos<BR><BR><BR>&nbsp;&nbsp;&nbsp; </font> </B><font size="1">Los troyanos son un
+tipo espec&iacute;fico de backdoors, pero lo que los diferencia es
+que modifican los daemons que com&uacute;nmente posee un servidor,
+como el inetd o el fingerd, es decir permanecen ocultos en el sistema
+comprometido. Cuando nos conectamos con alguno de los daemons
+&ldquo;troyanizados&rdquo;, le enviamos un comando determinado y nos
+permite el acceso como root. La gran ventaja es que a muy pocos
+admins se les ocurrir&iacute;a buscar puertas traseras dentro de sus
+propios programas. La mayor&iacute;a de los troyanos adem&aacute;s de
+ocultarse a s&iacute; mismos, tambi&eacute;n nos ocultan a nosotros;
+es decir que cuando entramos al sistema, permaneceríamos ocultos a
+programas como w o who. </font></font>
+</P>
+<P ALIGN=JUSTIFY><font face="Verdana"><font size="1">&nbsp;&nbsp;&nbsp; El problema
+es que los ficheros que modifican generalmente aumentan mucho en
+tama&ntilde;o, y tambi&eacute;n pueden ser detectados. Adem&aacute;s
+no son tan &ldquo;universales&rdquo; como los backdoors
+tradicionales, por lo que la mayor&iacute;a de los troyanos sirven
+para kernels y distros muy espec&iacute;ficas.</font></P>
+<P ALIGN=JUSTIFY><font size="1">&nbsp;&nbsp;&nbsp; Ahora una breve descripción de algunos de 
+los más utilizados. En el foro y en la sección de exploits de la web están todos 
+estos troyanos y algunos otros,&nbsp; e incluyen toda la documentaci&oacute;n
+de c&oacute;mo usarlo dentro del source. </font></font>
+</P>
+<UL>
+	<LI><P><FONT FACE="Verdana" size="1"><B>LocalCore: </B>Este es uno de los
+	troyanos m&aacute;s comunes, lo que hace es reemplazar el daemon del
+	login, y despu&eacute;s se hace una conexi&oacute;n a trav&eacute;s
+	de telnet (u otro cliente). Esto nos pedir&aacute; un password (que
+	se especifica en el source) y as&iacute; entraremos como root y no
+	apareceremos en los logs ni tampoco con el comando who.</FONT></P>
+</UL>
+<UL>
+	<LI><P><FONT FACE="Verdana" size="1"><B>BJ: </B>Otro troyano para el login,
+	modifica el archivo /bin/login. Para conectarlo se necesita
+	cualquier terminal (telnet por ejemplo) con el TERM configurado en
+	vt9111.</FONT></P>
+</UL>
+<UL>
+	<LI><P><FONT FACE="Verdana" size="1"><B>Fingerd Trojan: </B>Su nombre lo
+	indica, es un troyano para el daemon del finger.<B><BR></B><BR><BR>
+	</FONT>
+	</P>
+</UL>
+<P><font face="Verdana" size="1"><BR><BR><BR><BR>
+</font>
+</P>
+<P ALIGN=CENTER><font face="Verdana" size="1"><A NAME="BORRANDO NUESTRAS HUELLAS"></A>
+</font><FONT SIZE=1 FACE="Verdana" COLOR="#006699"><BR><B>BORRANDO
+NUESTRAS HUELLAS (zappers)</B></FONT><font face="Verdana" size="1"><BR>
+</font>
+</P>
+<P ALIGN=CENTER><font face="Verdana" size="1"><BR><BR>
+</font>
+</P>
+<P><font face="Verdana"><B>
+<font size="1"><BR>[+]
+Introducci&oacute;n <BR><BR>&nbsp;&nbsp;&nbsp; </font> </B><font size="1">Despu&eacute;s
+de garantizar nuestro ingreso como root tenemos otro problema; TODO
+lo que hemos hecho ha quedado registrado en los logs del sistema,
+nuestras ip, nuestras acciones, etc. Gracias a estos logs, el root
+legitimo puede saber f&aacute;cilmente que hemos rooteado su m&aacute;quina
+y adem&aacute;s tiene en su poder una prueba contundente para
+inculparnos en alg&uacute;n caso extremo ;). De eso se trata este
+capitulo, hablar&eacute; de algunas t&eacute;cnicas para borrar
+nuestras huellas. </font> <B><font size="1"><BR><BR><BR>&nbsp;</font></B></font></P>
+<P ALIGN=JUSTIFY><font face="Verdana"><B><font size="1"><BR>[+]
+Ficheros Crit&iacute;cos, Logs <BR><BR><BR>&nbsp;&nbsp;&nbsp;
+</font>
+</B><font size="1">En sistemas basados en unix, los logs son estructuralmente
+iguales, pero cambian de directorio y de nombre&nbsp; dependiendo de
+la distribuci&oacute;n. Generalmente son 4 los logs que debemos
+limpiar (syslog, utmp, wtmp, lastlog): </font></font>
+</P>
+<UL>
+	<LI><P ALIGN=JUSTIFY><FONT FACE="Verdana" size="1"><B>SYSLOG: </B>Este es un
+	demonio incorporado al sistema unix, que a su vez genera logs de
+	varios servicios, como mail, news, users activos, etc. Para ver
+	donde se ubica cada uno de estos logs, tienes que ver el fichero de
+	configuraci&oacute;n por defecto que se encuentra en
+	&quot;/etc/syslog.conf&quot;. Estos logs se guardan en ficheros de
+	textos, por lo cual su modificaci&oacute;n es relativamente simple.</FONT></P>
+</UL>
+<UL>
+	<LI><P ALIGN=JUSTIFY><FONT FACE="Verdana" size="1"><B>UTMP: </B>Guarda un
+	registro temporal de los usuarios que est&aacute;n conectados al
+	sistema. Este log es m&aacute;s dif&iacute;cil de modificar, ya que
+	no es un fichero de texto plano, sino que es un archivo binario, por
+	lo que la &uacute;nica manera de modificarlo discretamente (sin
+	borrarlos completamente) es usando zappers, de los cuales hablar&eacute;
+	m&aacute;s adelante. Generalmente se encuentra en /var/run/utmp. </FONT>
+	</P>
+</UL>
+<UL>
+	<LI><P ALIGN=JUSTIFY><FONT FACE="Verdana" size="1"><B>WTMP: </B>Muy peligroso,
+	guarda un registro con la ip de cada usuario que sale o entra al
+	sistema. Tambi&eacute;n es binario, y generalmente se ubica en
+	/var/log/wtmp. </FONT>
+	</P>
+</UL>
+<UL>
+	<LI><P ALIGN=JUSTIFY><FONT FACE="Verdana" size="1"><B>LASTLOG: </B>Guarda la
+	&uacute;ltima vez que cada usuario entrt&oacute; al sistema.
+	Adivinen, es binario. Se encuentra en /var/log/lastlog. </FONT>
+	</P>
+</UL>
+<UL>
+	<LI><P ALIGN=JUSTIFY><FONT FACE="Verdana" size="1"><B>ACCT: </B>Registra todos
+	los comandos introducidos por los usuarios, y adem&aacute;s tambi&eacute;n
+	es binario. Por suerte son pocos los sistemas que lo utilizan debido
+	al gran tama&ntilde;o de los logs. Se encuentra en /var/adm/acct. </FONT>
+	</P>
+</UL>
+<UL>
+	<LI><P ALIGN=JUSTIFY><FONT FACE="Verdana" size="1"><B>Otros Logs: </B>Existen
+	algunos logs para ciertos servicios y/o daemon, como por ejemplo
+	para el ftp, httpd, etc. La ubicaci&oacute;n de ellos depende mucho
+	del sistema y su configuraci&oacute;n. Otros logs no menos
+	importantes, pero menos comunes generalmente est&aacute;n en: </FONT>
+	</P>
+</UL>
+<P ALIGN=CENTER><FONT FACE="Verdana" size="1">/var/log/xferlog
+<BR>/var/log/messages <BR>/var/log/secure <BR>/var/log/auth.log
+<BR>/var/log/user.log <BR>/var/log/secure <BR>/var/log/spooler
+<BR>/var/log/warnings <BR>/var/log/info <BR>/var/log/errors
+<BR>/var/log/mail </FONT>
+</P>
+<P ALIGN=JUSTIFY>&nbsp;</P>
+<P ALIGN=JUSTIFY><font face="Verdana"><B><font size="1"><BR>[+]
+Zappers<BR><BR>&nbsp;&nbsp;&nbsp; </font> </B><font size="1">Siendo Root, podr&iacute;amos
+borrar completamente todos los logs, lo cual es lo m&aacute;s simple
+pero a la vez es lo m&aacute;s arriesgado. Un administrador notar&iacute;a
+enseguida la presencia de alg&uacute;n extra&ntilde;o si no encuentra
+ninguno de sus ficheros logs. Para evitar tener que borrarlos
+completamente, se han dise&ntilde;ado programas que solamente
+eliminan la informaci&oacute;n relacionada al usuario que
+especifiquemos, por lo que nuestra presencia pasa m&aacute;s menos
+desapercibida. Estos reciben el nombre de zappers debido a que el
+primero de estos programas se llamaba zap. <BR><BR>&nbsp;&nbsp;&nbsp;
+Para poder ejecutar un zapper completo debemos tener privilegios de
+root (obviamente). Existen cientos de zappers distintos, algunos
+orientados a un s&oacute;lo log, mientras que otros se encargan de
+m&aacute;s de uno. Los zappers realmente &uacute;tiles son aquellos
+que modifican los logs de tipo binario como el wtmp o el lastlog.
+Varios sources de zappers se encuentran en el archivo adjunto.</font></font></P>
+<P ALIGN=JUSTIFY>&nbsp;</P>
+<P ALIGN=JUSTIFY>&nbsp;</P>
+<P ALIGN=CENTER><font face="Verdana" size="1"><A NAME="ROOTKITS"></A></font>
+<FONT SIZE=1 FACE="Verdana" COLOR="#006699"><BR><B>ROOTKITS<BR><BR></B></FONT>
+<font face="Verdana" size="1"><BR>
+</font>
+</P>
+<P ALIGN=JUSTIFY><FONT SIZE=1 face="Verdana"><BR><B>[+]
+Introducci&oacute;n</B></FONT></P>
+<P ALIGN=JUSTIFY><font face="Verdana" size="1">&nbsp;&nbsp;&nbsp; En ocasiones
+puede resultar tedioso tener que ejecutar tantos programas para
+mantenernos dentro del sistema, pero para eso est&aacute;n los
+rootkits. Los rootkits se pueden definir como un &quot;todo en uno&quot;,
+porque incluyen zappers, troyanos, backdoors, sniffer y varias
+utilidades m&aacute;s dentro de una sola aplicaci&oacute;n. </font>
+</P>
+
+<P ALIGN=JUSTIFY>&nbsp;</P>
+
+<P ALIGN=JUSTIFY><FONT SIZE=1 face="Verdana"><BR><B>[+]&iquest;C&oacute;mo
+funcionan?</B></FONT></P>
+<P ALIGN=JUSTIFY><font face="Verdana" size="1">&nbsp;&nbsp;&nbsp; Obviamente
+existen rootkits m&aacute;s complejos que otros, y no s&oacute;lo por
+la cantidad de utilidades que poseen, sino que tambi&eacute;n por la
+manera de introducirse y ocultarse dentro del sistema comprometido.
+Los m&aacute;s b&aacute;sicos se construyen a partir de los códigos
+fuentes originales del sistema, por ejemplo un programador toma el
+source del login y lo comienza a modificar para que adem&aacute;s
+de realizar su funci&oacute;n normal, tambi&eacute;n haga algo en segundo
+plano. Luego toda esta serie de archivos modificados con troyanos, keyloggers, zappers, etc, se reemplazan por los archivos originales
+mimetizando su presencia. Otro tipo de rootkit m&aacute;s complejos,
+llegan a comprometer al sistema completo, incluso a modificando el
+kernel. Para profundizar m&aacute;s sobre esto, en la secci&oacute;n
+de art&iacute;culos de la web hay un par de papers que lo explican.</font></P>
+<P ALIGN=JUSTIFY>&nbsp;</P>
+<P ALIGN=JUSTIFY><FONT SIZE=1 face="Verdana"><BR><B>[+]
+Algunos Rootkits</B></FONT></P>
+<P ALIGN=JUSTIFY><font face="Verdana" size="1">&nbsp;&nbsp;&nbsp; Ac&aacute;
+les voy a comentar algunos de los rootkits m&aacute;s famosos y
+usados que existen. También los pueden encontrar en el foro y en la sección de 
+exploit de la web.</font></P>
+<P ALIGN=JUSTIFY>&nbsp;</P>
+<UL>
+	<LI><P ALIGN=JUSTIFY><FONT FACE="Verdana" size="1"><B>T0rnkit: </B>El cl&aacute;sico
+	de todos los tiempos. Oculta su presencia a la hora de la ejecuci&oacute;n
+	cerrando el proceso del syslog. Luego procede a troyanizar varios
+	daemons, principalmente el del ssh. Tambi&eacute;n reemplaza varios
+	programas como du, find, login, ls, ps, netstat, ifconfig, y otros.
+	Despu&eacute;s deja corriendo varios fingers en background dentro
+	del inetd, rsh y telnetd. Posteriormente vuelve a activar el syslog
+	dejando al sistema &quot;casi&quot; como antes. Por defecto deja el
+	puerto TCP 47017 abierto, por el cual podemos abrir la shell remota.
+	<br><br>
+	</FONT>
+	<LI><FONT FACE="Verdana" size="1"><B>Linux Rootkit (LRK): </B>Existen 5 
+    versiones de este poderoso rootkit. La más nueva posee una serie de sniffer, 
+    pero lo más notable es la troyanización del binario &quot;su&quot;.<BR><br>
+	</FONT>
+	<LI><FONT FACE="Verdana" size="1"><B>Adore: </B>Quizá pueda considerarse como uno de 
+    los más poderosos rootkit que existen, esto se debe a que es una gran suite 
+    de herramientas de monitoreo, además esconde todos los procesos, ficheros y 
+    conexiones extrañas que puedan delatar su presencia.<BR><BR>&nbsp;</B> </FONT>
+</UL>
+<font face="Verdana" size="1">
+<BR><BR>
+<BR><BR>
+</font>
+</P>
+<P ALIGN=CENTER><font face="Verdana" size="1"><A NAME="CONCLUSION"></A></font>
+<FONT SIZE=1 FACE="Verdana" COLOR="#006699"><BR><B>CONCLUSI&Oacute;N</B></FONT></P>
+<P ALIGN=CENTER><font face="Verdana" size="1"><BR><BR>
+</font>
+</P>
+<P ALIGN=JUSTIFY><font face="Verdana" size="1">&nbsp;&nbsp;&nbsp; Como habr&aacute;n
+visto, ninguno de los m&eacute;todos aqu&iacute; expuestos es
+completamente infalible, cada t&eacute;cnica tiene sus ventajas y
+desventajas. Que poseamos un zapper no significa que estamos a salvo,
+ni menos que podemos andar dejando logs por todo el servidor pensando
+que despu&eacute;s los podremos borrar, esto no es totalmente cierto,
+todo depende de la configuraci&oacute;n del servidor y de la
+habilidad del root legitimo, algunos root configuran los daemons de
+manera que lo logs que generan queden registrados en otra m&aacute;quina.
+El zapper, rootkit, troyano o cualquier utilidad que utilicemos
+deber&aacute; ser cuidadosamente elegida seg&uacute;n el conocimiento
+que tengamos de nuestra victima; aqu&iacute; es donde entra en juego
+la ingenier&iacute;a social&nbsp; :). Tambi&eacute;n cabe mencionar
+que los rootkits o backdoors que encuentran dentro del archivo
+adjunto son para fines netamente educativos, y no lo digo por la
+cl&aacute;sica frase &ldquo;no me hago
+responsable...&rdquo;, sino que lo digo por que simplemente ya no
+sirven ;) Esto se debe a que la mayor&iacute;a hace referencia a
+directorios o direcciones de memoria que ya no existen en las
+versiones nuevas de los kernels, y adem&aacute;s son detectados por
+los antivirus o bloqueados por los firewalls de los servidores.
+Espero que esos sources les sirvan como base para construir sus
+propias herramientas.</font></P>
+<P ALIGN=JUSTIFY><font face="Verdana" size="1">&nbsp;&nbsp;&nbsp; En
+conclusi&oacute;n, lo mejor es moverse con mucha cautela dentro del
+sistema, tomando todas las precauciones del caso; usar proxies,
+estudiar al root y ver a las horas que se conecta, ser lo m&aacute;s
+r&aacute;pido posible, etc., etc., etc... s&oacute;lo la practica te
+revelar&aacute; esos etc&eacute;teras ;)</font></P>
+<P><font face="Verdana" size="1"><BR><BR><BR><BR><BR><BR>
+</font>
+</P>
+<P ALIGN=CENTER><font face="Verdana" size="1"><A NAME="DESPEDIDA"></A></font>
+<FONT SIZE=1 FACE="Verdana" COLOR="#006699"><BR><B>DESPEDIDA</B></FONT></P>
+<P ALIGN=JUSTIFY><font face="Verdana" size="1">&nbsp;&nbsp;&nbsp; Despu&eacute;s
+de varias tazas de caf&eacute;, y de muchas interrupciones por mis
+estudios, termin&eacute; este tutorial. Espero que les guste y sigan
+leyendo el pr&oacute;ximo n&uacute;mero de nuestra ezine. Cualquier
+duda, correcci&oacute;n, felicitaci&oacute;n o puteada (lol) pueden
+hacerla en nuestro foro o directamente a mi mail
+daemon21[at]gmail[dot]com.</font></P>
+<P ALIGN=JUSTIFY><FONT FACE="Verdana" size="1"><B>Greetz:</B> A todo el staff
+de NST por incentivarme a seguir, a vampirin456 por hacerme re&iacute;r
+mientras escribo, a mis amigos del &quot;Achunte&quot; por estar
+siempre ah&iacute;, y por &uacute;ltimo a esa persona que quiero
+mucho pero que s&eacute; que nunca leer&aacute; esto.</FONT></P>
+</BODY>
+</HTML>

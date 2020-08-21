@@ -1,0 +1,402 @@
+<html>
+<head>
+<title>Seguridad en Aplicaciones Webs</title>
+<style>
+body{
+	  filter:alpha(opacity=90);
+      -moz-opacity:0.9;
+      opacity:0.9;
+      -khtml-opacity:0.9;
+      }
+code {
+    background-color: #FFFFF0;
+    color: #000000;
+	border: 1px solid #FFFFFF;
+	font-family: Verdana;
+	font-size: 10px;
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	display: block;
+	text-align: left;
+	vertical-align: top;
+	cell-padding: 4;
+	letter-spacing: normal;
+}
+span {
+	color: #00FF00;
+	font-size: 18px; 
+	font-weight: bold;
+	text-decoration: underline;
+}
+a {
+	color: #CCCCCC;	
+}
+a:hover {
+	color: #EEEEEE;
+	font-weight: bold;
+}
+a:visited {
+	color: #CCCCCC;	
+}
+a:active {
+	color: #CCCCCC;	
+}
+</style>
+</head>
+<body bgcolor=#000000 text=#FFFFFF>
+<div align=center><h2>Seguridad en Aplicaciones Webs</h2></div>
+
+<b>[+] - Formularios<br>
+[+] - Formularios de logueo</b><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[-] - Filtrar variables por métodos<br>
+<b>[+] - Formularios<br>
+[+] - Inclusión de archivos<br>
+[+] - Variables pasadas por método GET para consultas SQL<br>
+[+] - Cookie Poisoning<br>
+[+] - Bases de datos<br></b>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[-] - Floods a bases de datos<br>
+<b>[+] - Administraciones<br>
+[+] - Logs de Apache<br>
+[+] - Despedida<br><br></b>
+
+El fin de este artículo es que todos aquellos webmasters mejoren la seguridad en sus webs y que además aprendan a razonar, a encontrarse ellos mismo sus propios errores. Sin más que decir, empiezo con el artículo
+
+
+<br><br><br><span>Formularios</span><br><br>
+
+Los formularios son partes de una página que generalmente se usan para pasar datos ingresados por el usuario a una base de datos o bien, simplemente, a otro archivo. Los formularios tienen dos propiedades importantes: el action y el método (method).<br><br>
+
+El action indica la página  la que serán pasados los datos por el formulario. En caso de que no mencionemos esta propiedad en el código, el formulario enviará los datos a la misma página en que está. Por ejemplo, la página <b>contacto.php</b> tiene un formuario que no indica el action. Cuando mandemos los datos, éstos iran a <b>contacto.php</b>.<br><br>
+
+El método (method) es la forma en que pasaremos los datos. Para esto, tenemos dos opciones: GET y POST. La diferencia en el envío de datos de estos dos métodos es que el GET pasa los datos por la barra direcciones, las variables que hay en el formulario, los campos. El POST no manda nada por la url, manda todo "oculto". La única forma de ver cómo son mandados los datos por POST, es usando algún programa como el Achilles. 
+Como se podrán imaginar, el método POST es el que usaremos para prevenirnos contra los scripts kiddies.<br><br>
+
+Al fin y al cabo, los métodos POST y GET son iguales por así decir. Si los campos del formulario son pasados como variables por la barra de direcciones, un ataante podría cambiar los datos fácilmente. También, si se pasan por POST, el atacante podría modificarlos con algún programa.<br><br>
+
+Los formularios tienen <b>campos</b> que se indican mediante la etiqueta &lt;input&gt;. Principalmente, esta etiqueta recibe tres propiedades: type, que indicará el tipo de capo (text, password, submit, reset, radio, checkbox, hidden), name, que indicará el nombre de la variable que representará a ese campo y value, que indica el valor del campo (en caso de que no especifiquemos el campo quedará vacío.
+El tema de los campos es importante remarcarlo. ¿Cuántas veces vimos campos en los que no podemos escribir más de "x" carácteres?. La propiedad que limita la cantidad de caracteres de un campo es maxlenght.<br><br>
+
+Ahora bien, veamos un ejemplo concreto del uso de formularios. Esta aplicación es completamente insegura y lo que hace es tomar el valor que inserta el usuario e imprimirlo.<br><br>
+
+<b>imprimir.php</b><br>
+<code>&lt;?<br>
+if ($enviar!="") {<br>
+print $mensaje;<br>
+}<br>
+else { ?><br>
+&lt;form method=GET&gt;<br>
+&lt;table align=center&gt;<br>
+&lt;tr&gt;<br>
+&lt;td&gt;&lt;input type=text name=mensaje>&lt;/td&gt;<br>
+&lt;/tr&gt;<br>
+&lt;tr align=center&gt;<br>
+&lt;td colspan=2&gt;&lt;input type=submit name=enviar value=Aceptar&gt;&lt;/td&gt;<br>
+&lt;/tr&gt;<br>
+&lt;/table&gt;<br>
+&lt;/form&gt;<br>
+&lt;?<br>
+}<br>
+?&gt;</code><br>
+
+La siguiente imagen demuestra que el script es vulnerable a Cross Site Scripting (Html Inyection):<br><br>
+
+<img src=web1.jpg width="1024" height="738">
+
+Como podemos ver, en la barra de direcciones aparece el valor de la variable mensaje pero transformada a url encode, lo cual no cambia nada en nuestro caso. Además, está presente la variable enviar para que el script imprima el valor de la variable mensaje.<br><br>
+
+El script es vulnerable a cross site scripting ya que si le pasamos una etiqueta html la imprime tal como lo indica su valor sin filtrarla.<br><br>
+
+Además, está mal hecho, es decir, mal programado. En primer lugar el script se basa en valor de una variable (que no se indica si se por GET o POST). Lo mismo pasa con la variable mensaje. Si bien esto no cambia mucho ya que sólo puede reproducir unos pequeños errores, el script no "convence" por así decir, no está bien programador.
+Ahora bien, el verdadero bug en la aplicación es el hecho de que no se filtre el valor de la variable mensaje. En ningún momento se "controla" su contenido para ver si tiene etiquetas html que puedan afectar el contenido de la página.<br><br>
+
+Para solucionar esto usaremos la función htmlspecialchars() de PHP. Esta función lo que hace es cambiar cada signo a su entidad html (por ejemplo, el &lt; lo cambia a &#38;lt;). Por lo tanto, nuestro script modificado y bien programado quedaría así:<br><br>
+
+<code>&lt;?<br>
+if (!empty($_POST['enviar'])) { /* Chequeamos que no esté vacía la variable */<br>
+$mensaje=htmlentities($_POST['mensaje']);<br>
+if (!empty($mensaje)) print $mensaje;<br>
+}<br>
+if (empty($_POST['enviar']) or $mensaje=="") { ?><br>
+&lt;form method=POST&gt;<br>
+&lt;table align=center&gt;<br>
+&lt;tr&gt;<br>
+&lt;td>&lt;input type=text name=mensaje>&lt;/td&gt;<br>
+&lt;/tr&gt;<br>
+&lt;tr align=center&gt;<br>
+&lt;td colspan=2&gt;&lt;input type=submit name=enviar value=Aceptar&gt;&lt;/td&gt;<br>
+&lt;/tr&gt;<br>
+&lt;/table&gt;<br>
+&lt;/form&gt;<br>
+&lt;?<br>
+}<br>
+?&gt;</code><br>
+En este caso, a pesar de que el script es vulnerable, no ganamos mucho ya que sólo ejecutaremos html sin más que hacer. Pero imaginen el caso de un libro de visitas vulnerable. Podríamos poner un script en javascript que robara las cookies de cada usuario que viera libro.<br><br>
+
+Aún este script se puede mejorar. Supongamos un caso en el que tenemos un formulario y queremos que los datos sólo sean enviados desde nuestro formulario. Siguiente el método que usamos, un atacante podría generar un formulario en html con el action en nuestra web y una variable de tipo submit con nombre enviar. De esta manera, nuestro script interpretaría que se entró al formulario.<br><br>
+
+Para resolver este problema usaremos <b>consantes</b>. Si no existe la constante, muestro el formulario. En caso contrario, interpreto los datos. Este método es 100% seguro ya que un atacante nunca podrá adivinar el nombre de la constante (al menos si le ponemos un buen nombre).<br><br> 
+
+Nuestro script, con la implentación de contantes quedaría así:<br>
+
+<code>&lt;?<br>
+if (defined('CONSTANTE_FORM')) { /* Chequeamos que esté definida la constante */<br>
+$mensaje=htmlentities($_POST['mensaje']);<br>
+if (!empty($mensaje)) print $mensaje;<br>
+}<br>
+if (!defined('CONSTANTE_FORM') or $mensaje=="") { <br>
+define('CONSTANTE_FORM', TRUE); /*defino la constante */?><br>
+&lt;form method=POST&gt;<br>
+&lt;table align=center&gt;<br>
+&lt;tr&gt;<br>
+&lt;td>&lt;input type=text name=mensaje>&lt;/td&gt;<br>
+&lt;/tr&gt;<br>
+&lt;tr align=center&gt;<br>
+&lt;td colspan=2>&lt;input type=submit name=enviar value=Aceptar&gt;&lt;/td&gt;<br>
+&lt;/tr&gt;<br>
+&lt;/table&gt;<br>
+&lt;/form&gt;<br>
+&lt;?<br>
+}<br>
+?&gt;</code><br><br>
+
+Creo que la programación con constantes es la más segura... sobre todo para las aplicaciones en las que interviene el usuario.<br><br>
+<b><font color="#00FF00">Filtrar variables por método</b></font><br><br>
+Podríamos generar un bucle para filtrar todas las variables pasadas por x método, como por ejemplo, el GET:<br><br>
+
+<code>&lt;?<br>
+sort($_GET);<br>
+foreach ($_GET as $indice => $valor)<br>
+$_GET[$indice]=htmlentities($valor);<br>
+?&gt;</code><br>
+Como pueden ver, este script evita que tengamos que filtrar variable por variable, por lo que es muy útil.
+
+
+<br><br><span>Formularios de logueo</span><br><br>
+
+Los conocidos "logins" o bien formularios de logueo (nadie lo nombra así, sólo yo : P) son una parte muy importante a tratar de la seguridad web. La mayoría de los logueos se crean para cambiar los permisos de los usuarios básicamente. A continuación veremos algunas pautas para mejorar la seguridad en nuestros logins.<br><br>
+
+En primer lugar tendremos que pensar en sql injection. La inyección sql cosa que no voy a tratar en este artículo consiste en alterar la consulta a la base de datos mediante lo que ingresamos en los campos. Si los campos no se filtran (por ejemplo, que no se filtren las comillas simples sería un suicidio) somos potentemente vulnerables (ver en la ezine #0x01 el artículo de Sql Injection).<br><br>
+
+Para filtrar las comillas básicamente volveremos a usar htmlentities(). También está bueno crear una función y que muestre alguna otra cosa fuera de lo normal para "asustar" al atacante. Podríamos hacer una función que guardara la IP, se fijara si tiene proxy, el ISP y demás cosas, pero sería una pérdida de tiempo sinceramente.<br><br>
+
+Así que para filtrar las variables pasadas por el usuario usaremos htmlentities($variable) al igual que con los demás formularios. Otra cosa, traten de no hacer función que reemplaza ' o " solamente ya que podrían pasar el valor "url" (de urlencode/decode) de las comillas simples, %27, o el de las dobles (que no serviría de mucho en un login), %22.<br><br>
+
+Veamos el caso de un formulario vulnerable a SQL Injection en ASP para que se den una idea de cuán potente es la vulnerabilidad si no sabemos parchear:<br><br>
+
+<img src=sql.jpg width="1031" height="405"><br><br>
+
+
+<img src=sql1.jpg width="1023" height="461"><br><br>
+
+Como ya les dije, para entender en qué consisten las inyecciones sql mediante formularios lean el artículo que hizo daemon21 en nuestra primera ezine.<br><br>
+
+
+<br><span>Inclusión de archivos</span><br><br>
+
+La inclusión de archivos en páginas webs es un factor muy usado por los atacantes. Muchas veces se incluyen páginas sin filtrar de ningún modo, sin proteger la inclusión ni mucho menos. La vulnerabilidad relacionada con la inclusión externa de archivos se llama <b>Remote File Inclusion</b> (pueden leer un artículo en http://www.neosecurityteam.net acerca de esta vulnerabilidad).
+Lo que nos permite esta vulnerabilidad es incluir archivos ajenos al servidor y ver códigos fuentes, ejecutar comandos en el servidor y demás cosas.<br><br>
+
+Si no quieren parchear la vulnerabilidad con un switch (vean el artículo que mencioné anteriormente), por lo menos no incluyan los archivos directamente. Es decir, no incluyan los php porque, por ejemplo, podrían incluir el archivo index.php y se generaría un bucle infinito. Esta vulnerabilidad se arregla
+más que nada, con la filtración de variables y con un poco de lógica.<br><br>
+<br><span style="font-size: 18px; font-weight: bold;"><u>Variables pasadas por método GET para consultas SQL</u></span><br><br>
+
+En toda página dinámica, programada en PHP o ASP siempre alguna sección toma los datos de una base de datos basándose en un valor, generalmente generado por el click de un usuario u otra cosa parecida. Por ejemplo, un sistema de artículos que se divide en secciones. Al ir a una sección se pasa la variable <b>seccion</b> por GET indicando el id de la categoría por ejemplo.<br><br>
+
+Empezaremos viendo SQL Injection de vuelta pero mediante las variables GET. Muchas veces las páginas en ASP suelen basarse en las variables a la vista, al alcance de los usuarios. No voy a tratar un PHP Nuke ni muchos menos, sino páginas hechas por programadores independientes.<br><br>
+El siguiente caso que veremos demuestra un grave error de programación. Si bien se puede explotar a fondo, sólo quiero que vean lo que puede hacer el hecho de no filtrar una variable.<br><br>
+
+En la siguiente screen tenemos a la página totalmente normal, pareciendo funcionar perfectamente:<br><br>
+<img src=web3.jpg width="1024" height="738"><br><br><br><br>
+Acá podemos ver la misma página pero cambiándole el valor de SiteID por '' or 1=1--
+<br><br>
+<img src=web4.jpg width="1024" height="738"><br><br>
+
+La vulnerabilidad de esta página consiste en el hecho de no filtrar las variables pasada por GET. En este caso, <b>SiteID</b> es usada para una consulta a la base de datos. Al no filtrarse su contenido, se produce un error en la consulta y sucede lo mostrado.<br><br>
+
+<br><span>Cookies</span><br><br>
+
+En esta parte me parece que está bien poner una demostración de cómo falsificar cookies, cómo modificarlas a nuestro favor.<br><br>
+
+El cookie poisoning, también conocido como envenamiento de cookies, falsificación de cookies, es algo muy usado para falsear nuestra identidad en apliciones webs. No tiene ninguna ciencia ya que el método consiste en cambiar la cookie a mano.<br><br>
+
+<b>¿Qué vamos a necesitar?</b><br><br>
+
+Achilles: http://neosecurityteam.net/descargas/Achilles.zip<br>
+Firefox: http://getfirefox.com<br>
+
+<b>Falsificando las cookies con el Achilles</b><br><br>
+
+La utilidad de la falsificación de cookies como ya dije es la de falsificar nuestra identidad. Por ejemplo, vemos en www.waraxe.us que hay una inyección sql para phpbb2 que nos brinda el md5 de un administrador. Si el pass es muy largo no podremos crackearlo o bien tardaremos muchísmo tiempo. En este caso, podríamos modificar la cookie de tal forma que nos loguee como administradores.<br><br>
+
+Vamos a ver el ejemplo con un simple php que nos dice la info de nuestra cookie. Lo que hace es comprobar si el usuario admin tiene un pass correcto.  Lo que vamos a hacer será cambiar el contenido de la cookie usando el Achilles y el firefox.<br><br>
+
+En primer lugar creamos el script en PHP:<br><br>
+
+<code>&lt;?<br>
+if (!isset($_COOKIE['datos'])) {<br>
+if (isset($_POST['enviar'])) {<br>
+    $password=$_POST['password'];<br>
+    setcookie("datos", "admin:" . md5($password) . "", time()+12000);<br>
+    if (md5($password)=="32250170a0dca92d53ec9624f336ca24")<br>
+    print "El usuario se logueó satisfactoriamente";<br>
+    else print "El password insertado no es válido";<br>
+}<br>
+if (!isset($_POST['enviar'])) { ?><br>
+&lt;form method=POST&gt;<br>
+&lt;table align=center&gt;<br>
+&lt;tr&gt;<br>
+&lt;td&gt;Usuario: &lt;/td><br>
+&lt;td&gt;&lt;input type=text name=usuario value=Admin>&lt;/td><br>
+&lt;/tr&gt;<br>
+&lt;tr&gt;<br>
+&lt;td&gt;Password: &lt;/td><br>
+&lt;td&gt;&lt;input type=password name=password>&lt;/td><br>
+&lt;/tr&gt;<br>
+&lt;tr align=center&gt;<br>
+&lt;td colspan=2&gt;&lt;input type=submit value=Aceptar name=enviar>&lt;/td&gt;&lt;/tr&gt;<br>
+&lt;/table&gt;&lt;/form&gt;<br>
+&lt;?<br>
+}<br>
+} else {<br>
+    $dat=explode(":",$_COOKIE['datos']);<br>
+    if ($dat[1]=="32250170a0dca92d53ec9624f336ca24") print "Password válido";<br>
+    else print "Password no válido";<br>
+}<br>
+?&gt;</code><br><br>
+
+Lo que hace es fijarse si la cookie contiene un MD5 que representa al pass pass123. <br><br>
+
+Una vez que tienen el Achilles lo abren, chequean todos los checkbox menos el "Log to File", cambian el client timeout y el server time out a 5, el Listen on Port lo ponen en 666 (en firefox el 5000 causa problemas) y apretan el botón con el signo de "Play" para que empiece a funcionar el server proxy (si les interesa este programa pueden leer el artículo acerca de cómo manejarlo). <br><br>
+
+Ahora vamos a nuestro navegador y lo configuramos para que utilice un servidor proxy con los siguientes datos. Host: localhost. Puerto: 666<br><br>
+
+En Internet Explorer van a Herramientas, Opciones, Conexiones, Configuración Lan, habilitan la casilla para usar un server proxy y completan los datos.
+En firefox van a Tools, Options, después a Connection Settings en General y habilitan el server proxy (configurando sólo para HTTP).<br><br>
+
+Ahora bien, abrimos el navegador configurado para utilizar el proxy y ponemos la dirección: www.neosecurityteam.net/practicas/falsificar_cookies.php<br><br>
+
+En el achilles van a ir apareciendo las peticiones HTTP. Nosotros vamos a poder modificarlas sin ningún tipo de problema y, para que siga con las demás peticiones, tenemos que apretar Send cada vez que nos llegue una.
+Ponemos cualquier pass y nos dirá "Password no válido". Ahora bien, cierren el navegador, abran la misma dirección y en el achilles les saldrá algo así:<br><br>
+
+<img src=cookies1.jpg width="768" height="527"><br><br>
+
+Una vez que llegamos a esta petición tendremos que cambiar el md5 que estás después del %3A por 32250170a0dca92d53ec9624f336ca24. De esta manera, mandamos las peticiones y nos autenticaremos satisfactoriamente.<br><br>
+
+
+<b>Falsificando cookies en Firefox</b><br><br>
+
+Vamos a usar el mismo ejemplo, pero esta vez editaremos la cookie desde el archivo que les almacena. El mismo, se encuentra en C:\Documents and Settings\Usuario\Datos de programa\Mozilla\Firefox\Profiles\k1z7gila.default\ y se llama cookies.txt<br><br>
+
+Una vez que tenemos abierto el fichero buscamos la cookie. Esto podemos hacerlo buscando admin%3A o bien buscando el dominio o alguna referencia a la web víctima. Llegamos a la parte de los datos y nos encontramos con esto:<br><br>
+
+<code>
+/~moneos/practicas/	FALSE	1010231955	datos	admin%3A7815696ecbf1c96e6894b779456d330e</code><br>
+
+Haremos lo mismo que con el Achilles: cambiamos el md5 que está después de %3A, en este caso 7815696ecbf1c96e6894b779456d330e, por el que es válido para la comprobación, 32250170a0dca92d53ec9624f336ca24. Una vez que hicimos el cambio, guardamos la cookie y abrimos el navegador nuevamente:<br><br>
+
+<img src=cookies2.jpg width="1024" height="738"><br><br>
+
+La idea de esto es que ustedes mismos lo apliquen a otros sistemas como foros, paquetes precompilados y demás.<br><br>
+
+<br><span>Bases de datos</span><br><br>
+
+En esta sección pretendo dar una serie de consejos para mejorar la seguridad en aquellas páginas que interactúen con bases de datos y que guarden información sensible acerca de personas (o no).<br><br>
+
+En primer lugar hay que filtrar TODAS las variables (si, es la décima vez que lo digo) que se vinculen con las consultas a la base de datos. El hecho de que los usuarios tengan acceso a las mismas y a su modificación es algo demasiado peligroso.
+A esto tenemos que sumarle el uso del método POST para protejernos contra los script kiddies. En caso de que tengamos un buscador en nuestra página tendremos que filtrarlo como cualquier otra variable de la web.<br><br>
+
+Otra cosa muy importante es la forma en que guardaremos los passwords en la base de datos. Sí o sí tenemos que usar un algoritmo de cifrado, de una sola vía, que no se pueda desencriptar. Si lo que quieren es poder conseguir el pass en limpio pueden hacer un sistema de
+encriptación ustedes mismos, con un simple función que reciba una cadena y reemplaze x letra por otra (no hagan eso de tomar el ascii y aumentarlo o restarlo porque se puede crackear en segundos). El hecho de encriptar los passwords es para el caso en que una persona descubra una
+vulnerabilidad en la página, que, por ejemplo, permita ver los passwords almacenados en la base de datos. Si los encriptamos con MD5 tendrán que hacer brute force, aunque lo mejor sería encriptar en MD5 dos veces, es decir sacar el MD5 del MD5. De esta forma, se pensarán qeu están crackeando
+un MD5 común y nunca obtendrán el valor desencriptado.<br><br>
+
+<br><font color="#00FF00"><b>Floods a bases de datos</b></font><br><br>
+
+Otro ataque muy común entre los atacantes (más bien lammers en este caso, o bien, atacantes que recurren como última instancia a este ataque) es el del flood, la denegación del servicio. Lo que se quiere hacer la mayoría de las veces es encontrar una página vulnerable de la web y hacer una sobre carga a la base de datos.
+Para que se produzca una denegación del servicio efectiva tendríamos que hacer muchísimas consultas al mismo tiempo, por lo que muchas personas tendrían que estar ejecutando el mismo script. Pero mejor veamos un caso concreto.<br><br>
+
+Tenemos un script de noticias en el cual se pueden agregar comentarios por cada usuario. Al mandar los datos, las variables POST quedan almacenadas. Entonces, una vez que se mandó el comentario, las variables siguen estando, por lo que si actualizamos la página el comentario se insertará de vuelta puesto que el script reconocerá
+las variables POST. Para solucionar este tipo de ataques es conveniente que todo lo que sea insertado por el usuario tenga un cierto tiempo. De esta manera, cuando el usuario quiera insertar un comentario, primero nos fijamos que hayan pasado, por ejemplo, 15 segundos desde su mensaje. Si es así lo insertamos, en caso contrario
+no insertamos nada en la base de datos.<br><br>
+
+Otro ataque muy frecuente es la denegación de servicio local teniendo los datos de la base de datos. Lo que se hace es un script que se conecta y desconecta con la base de datos muchas veces seguidas. Si muchas personas
+ejecutan este script, se produce una denegación de servicio, por lo que el servicio se cae. El siguiente ataque se hizo en localhost, por lo que fue muchísimo más fácil ya que la transmisión de paquetes es mucho más rápida. Pero remotamente no es imposible, sólo hay que conseguir gente:<br><br>
+
+<img src=dos.jpg width="1024" height="738"><br><br>
+
+Este ataque se hizo con el siguiente código:<br><br>
+
+<code>&lt;?<br>
+for ($i=0; $i<999999999; $i++) {<br>
+$link=mysql_connect("localhost", "", "");<br>
+mysql_close($link);<br>
+}<br>
+?&gt;</code>
+<br><span>Administraciones</span><br><br>
+
+Hoy en día muchos webmasters eligen hacer páginas dinámicas para enviar noticias, artículos, archivos o cualquier otra cosa. Para esto, crean una administración que, en muchos casos es muy insegura o bien tiene algunos errores importantes.<br><br>
+
+En primer lugar, el login tiene que ser totalmente seguro (creo que no hace falta que aclare esto). La administración nunca estará en un solo archivo (a menos que sea muy chica) y es por eso que en la carpeta de la administración habrá más de un archivo. Pero, si protegemos el index de la administración, ¿Cómo protegemos los demás archivos?. Eso es lo que voy a explicar bien ahora.<br><br>
+
+La forma más segura de proteger todos los archivos es con el uso de constantes como dije anteriormente. En cada archivo pondremos unas líneas que comprueben que X constante está definida. Si no lo está, terminamos la ejecución del archivo. De esta manera, en el index definimos la constante y después incluimos todos los archivos (recueredn qeu un usuario que no tenga acceso a los códigos fuente nunca podrá saber el nombre de la constante).<br><br>
+Esta implentación es muy buena pero podríamos aumentar un poco más la seguridad con una típica ventana de autenticación que protegiera toda la carpeta. Este tipo de scripts se consiguen fácilmente y pueden bajar el que quieran de <a href="http://www.hotscripts.com/PHP/Scripts_and_Programs/User_Authentication/index.html">acá</a><br><br>
+
+<br><span>Logs de Apache</span><br><br>
+
+Hoy en día este es el servidor web más usado, aunque IIS se usa mucho, pero acá trataremos el software open source. Los logs de Apache son los que guardan todas las peticiones HTTP que se le hicieron al servidor. Si alguien nos ataca y queremos saber su IP, cómo nos atacó y cuándo, miraremos los logs del Apache.<br><br>
+
+Los logs de acceso se guardan en access.log y los aquellas peticiones no válidas, los errores, se guardan en error.log. Si el servidor corre bajo Windows, los logs se ubicarán en la carpeta apache/logs. Si el servidor web corre bajo Linux, podrán ver los logs en /var/apache/logs/ (por defecto). Las líneas son, por ejemplo, como esta:<br><br>
+
+<code>127.0.0.1 - - [28/Dec/2004:14:41:18 -0300] "GET /icons/text.gif HTTP/1.1" 200 229 "http://localhost/new_design/" "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.3) Gecko/20040910"</code><br>
+En primer lugar aparece la IP remota, el día de la petición, la fecha, la petición propiamente dicha, la carpeta en donde está el navegador y por último, la información de la cabecera USER-AGENT, que contiene información del sistema operativo y la del navegador web.<br><br>
+Espero que ustedes sepan aprovechar los logs para poder ver quién está intentando atacarlos.<br><br>
+<br><span>HTTP Logger</span><br><br>
+Si bien Apache nos brinda los logs de todas las peticiones, nosotros mismos podremos hacer un simple script que realize esta tarea. La siguiente aplicación la hice con el fin de grabar la IP del visitante (o Proxy si usa), la cabecera USER-AGENT, las variables GET y POST, el día y la fecha de la petición. Para utilizarla basta con hacer un include al archivo (logger.php), que a su vez trabajará sobre el archivo logger.txt. IMPORTANTE: este fichero no tiene que tener permisos de lectura para el público, ya que podrían ver toda la información.<br><br>
+<code>&lt;?<br>
+/*<br>
+HTTP Logger by Paisterist<br>
+Author: Paisterist<br>
+Date: 27-02-25<br>
+[N]eo [S]ecurity [T]eam ©<br><br>
+
+Description: this tool save the information of the guest, like the IP (or Proxy if he's using any one), USER-AGENT header, the time, GET and POST vars, etc.
+If you are going to use it on your web just do an include. Be sure that the logger.txt file is going to have no-read permisissions.<br><br>
+
+NOTE: the high anonymity proxies don't send any headers to the browser and PHP can't assume it. If the proxy isn't High Anonymity, this tool can assume it.<br>
+*/<br>
+$log=$_SERVER['PHP_SELF']." ";<br>
+if (count($_GET)!=0) {<br>
+    $log.="GET: ";<br>
+    foreach ($_GET as $key => $value) $log.=$key."=".$value." ";<br>
+}<br>
+if (count($_POST)!=0) {<br>
+    $log.="POST: ";<br>
+    foreach ($_POST as $key => $value) $log.=$key."=".$value." ";<br>
+}<br>
+if ($HTTP_CLIENT_IP!="") $log.=$HTTP_CLIENT_IP;<br>
+elseif ($HTTP_X_FORWARDED_FOR!="") $log.=$HTTP_X_FORWARDED_FOR;<br>
+else $log.=$REMOTE_ADDR;<br>
+$fecha=getdate();<br>
+$log.=". Fecha: ".$fecha['mday']."-".$fecha['mon']."-".$fecha['year']."";<br>
+$log.=" a las ".$fecha['hours'].":".$fecha['minutes'].":".$fecha['seconds'];<br>
+$log.=" USER-AGENT: " . $HTTP_USER_AGENT;<br>
+if ($fp=fopen("log.txt", "a")) {<br>
+    fwrite($fp, $log."");<br>
+}<br>
+?&gt;
+</code>
+
+<br><br>
+<br><span style="font-size: 18px; font-weight: bold;"><u>Despedida</u></span><br><br>
+
+Bueno, hasta acá llego yo. En este artículo vimos la filtración de variables, métodos POST y GET, algunos tips para aumentar la seguridad, bases de datos y otras cosas importantes. Con este artículo no alcanza, ustedes tienen que aprender de sus propios errores. Espero que les haya servido e interesado el artículo.<br><br>
+Saludos<br><br>
+<b>By Paisterist</b><br><br>
+<b>Contacto:</b> paisterist[at]gmail[dot].com<br>
+<b>[N]</b>eo &nbsp;<b>[S]</b>ecurity&nbsp;<b>[T]</b>eam&nbsp;&nbsp; --> <a target="_blank" href=http://neosecurityteam.net>http://neosecurityteam.net</a> -->
+<a target="_blank" href="http://neosecurityteam.net/foro.php">
+http://neosecurityteam.net/foro.php</a><p><i><b><font size="1" face="Verdana">/* 
+EOF */</font></b></i></p>
+
+</body></html>

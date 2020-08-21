@@ -1,0 +1,797 @@
+<html>
+
+<head>
+<title>Funciones Inseguras en C</title>
+<style>
+body{
+	  filter:alpha(opacity=90);
+      -moz-opacity:0.9;
+      opacity:0.9;
+      -khtml-opacity:0.9;
+      }
+code {
+    background-color: #FFFFF0;
+    color: #000000;
+	border: 1px solid #FFFFFF;
+	font-family: Verdana;
+	font-size: 10px;
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	display: block;
+	text-align: left;
+	vertical-align: top;
+	cell-padding: 4;
+	letter-spacing: normal;
+}
+span {
+	color: #00FF00;
+	font-size: 18px;
+	font-weight: bold;
+	text-decoration: underline;
+}
+a {
+	color: #CCCCCC;	
+}
+a:hover {
+	color: #EEEEEE;
+	font-weight: bold;
+}
+a:visited {
+	color: #CCCCCC;	
+}
+a:active {
+	color: #CCCCCC;	
+}
+ table.MsoNormalTable
+	{mso-style-parent:"";
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	}
+h1
+	{margin-right:0in;
+	margin-left:0in;
+	font-size:24.0pt;
+	font-family:"Times New Roman";
+	font-weight:bold}
+</style>
+</head>
+
+<body bgcolor=#000000 text=#FFFFFF>
+
+<p align="center"><b><font size="5">Google Searching Techniques<br>
+Risks for Searchers and Web Pages</font></b><br>
+<br>
+<br>
+<b>..::[N]eo [S]ecurity [T]eam::..<br>
+http://www.neosecurityteam.net</b></p><br>
+<br>
+<br>
+<b>Autor : [Link] <br>
+Contact: &lt;link07@gmail.com&gt;<br>
+<br>
+<br>
+Disclaimer.-</b><br>
+<br>
+[N]eo [S]ecurity [T]eam [NST] , ni sus integrantes se hacen responsables del uso 
+que le puedas dar a la informacion aqui expuesta, ya que esta se transmite con 
+fines culturales y nosotros no somos responsables de las acciones que tomen.<br>
+<br>
+Este articulo se escribio con conocimiento propio y fuentes gratuitas en 
+internet.<br>
+Las referencias a archivos o urls que revelen información peligrosa son 
+totalmente anonimos, o que ya no sirven , no se muestra ninguna url ni nada que 
+pueda exponer alguna información valiosa de terceras personas , todas fueron 
+reemplazadas por asteriscos “*”<br>
+<br>
+<b>¿Por qué este tema? .-</b><br>
+<br>
+Saber encontrar lo que uno esta buscando , es el primer paso para alcanzar algun 
+objetivo, en informatica, siempre que vamos estudiando nos invaden las dudas, 
+que mejor profesor que uno que lo sabe casi todo, ningun ser humano es una base 
+de datos gigante que pueda responder casi todas nuestras dudas , google si ;)<br>
+Pero junto con esta excelente herramienta vienen algunos riesgos tanto para las 
+personas que buscan información, como para las paginas que la exhiben.<br>
+<br>
+<b>Introduccion.-</b><br>
+<br>
+Google es una herramienta INDISPENSABLE para cualquier persona ligada a la 
+informatica, tambien lo es para personas de otras ramas ya que es el mejor 
+buscador que existe en toda la red.<br>
+<br>
+En este pequeño articulo aprenderemos como hacer un buen uso de esta excelente 
+herramienta, como encontrar lo que queremos en internet con ella, sus excelentes 
+ventajas en cuanto a metodos de búsqueda por el uso de sus operadores, y tambien 
+veremos lo riesgoso que puede ser para las paginas web como para el cliente.<br>
+<br>
+<br>
+<b>Getting Started .- </b> <br>
+<br>
+Google nos ofrece una gran variedad de servicios: búsqueda de imágenes, 
+newsgroups, traductores, grupos categorías …. , una herramienta de búsqueda muy 
+completa.<br>
+<br>
+Veremos algunas formas de utilizar este excelente buscador, veamos algunas 
+opciones:<br>
+<br>
+<br>
+<u>Búsqueda “normal”:</u><br>
+<br>
+Esta es la opcion que comúnmente se usa, solo poner el texto a buscar y enviarlo 
+con el boton Google Search, para esta opcion podemos usar operadores que nos 
+daran gran presicion de búsqueda, los veremos mas adelante.<br>
+<br>
+<u>“I’m feeling lucky”:</u><br>
+<br>
+En vez de presentar una lista de resultados de búsqueda, este botón transportara 
+al usuario a la página más “apta” para el término de búsqueda entrado. A menudo 
+esta pagina es la mas revelante o la que mas tiene que ver con los terminos de 
+búsqueda que se pusieron.<br>
+<br>
+<u>Búsqueda avanzada:</u><br>
+<br>
+Esta búsqueda permite filtrar los resultados mas estrictamente, añadiendo 
+opciones que pueden o no salir en los resultados, tales como dominio, idioma, 
+formato de archivo, etc.<br>
+<br>
+<br>
+<u>Herramientas de idioma:</u><br>
+<br>
+Esta opcion ofrece al usuario muchas opciones, en cuanto al idioma y al pais de 
+procedencia de los resultados de la búsqueda , asi como traducir textos o 
+paginas de un determinado idioma a otro y la lista de paises incluidos en la 
+lista de google, y de los cuales tiene un dominio para los mismos<br>
+<br>
+<u>Preferencias:</u><br>
+<br>
+Nos permite configurar bastantes opciones de búsqueda tales como el idioma, 
+numero de resultados, filtros … estas opciones se guardaran en cookies.<br>
+<br>
+<br>
+<b>Metodos de Búsqueda.-</b><br>
+<br>
+Comencemos viendo como google realiza las búsquedas, pongan por ejemplo la 
+palabra “hacker” y denle submit con google search o “búsqueda en google” en 
+español.<br>
+<br>
+Ahora pongan “quiero ser hacker” , veran unos resultados completamente distintos, 
+esto debido a que google basa su búsqueda en varios aspetos:<br>
+<br>
+Trata de encontrar la pagina que tenga todas las palabras que buscamos, busca en 
+distintos lugares: el contenido de la pagina, el titulo, la direccion url y la 
+meta información, mientras mas coincidencias hayan en mejor puesto saldra la 
+pagina.<br>
+<br>
+Para los que no saben , la meta info, son unos tags html que definen la 
+categoría, temas, palabras clave, autor , entre otras caracteristicas, de la 
+pagina que se esta viendo, mientras mas contenido tenga la meta info habra mayor 
+opcion a salir en mejores puestos de la búsqueda, cuando se submite una frase o 
+palabra , lo primero con lo que se guia google para encontrar la mejor pagina 
+posible, es con la meta info después busca contenido, url, titulo, etc, y el que 
+tenga mayor coincidencia sale mas arriba.<br>
+<br>
+Pueden ver que toda coincidencia que encuentra google lo resalta con negrita, y 
+lo pueden ver en el titulo, contenido y url de las paginas dadas como resultado.<br>
+<br>
+Si se fijan cuando escribieron “quiero ser hacker” no en todos los resultados 
+aparecian todas las palabras juntas, solo algunas, otras bastante separadas , a 
+medida que avanzamos de pagina , veimos otras que nada que ver con lo que 
+buscamos, el ser coincidia con una palabra “ser”vicios por ejemplo, para poder 
+hacer que nuestra búsqueda sea lo mas presisa posible utilizaremos una sintaxis 
+diferente en nuestra búsqueda indicando que palabras queremos o no que salgan, 
+juntas separadas mixtas frases, sitios titulo url , etc iremos viendolos uno por 
+uno:<br>
+<br>
+<b>Búsqueda por frases .-</b><br>
+<br>
+Si queremos que una frase salga en una pagina y no las palbras de la misma, o 
+sea que las palabras que mandamos a buscar aparezcan juntas, añadimos “ “ 
+alrededor de ellas.<br>
+Prueben poniendo “quiero ser hacker” entre comillas y veran que los resultados 
+cambian completamente, ya no hay ninguna de las palabras de la frase por 
+separado, google busca paginas que contengan esas palabras en el mismo orden y 
+juntas , por lo cual como se daran cuenta las paginas que nos muestra son 
+totalmente distintas a las paginas anteriores<br>
+<br>
+Tambien se puede hacer búsquedas mixtas , por ejemplo: “programacion en c++” 
+linux <br>
+Tal como esta y buscara paginas que contengan la frase “programación en c++” y 
+la palabra linux, la frase y la palabra pueden o no estar juntas.<br>
+<br>
+Por que puse “programacion en c++” linux y no “programacion en c++ linux” ¿? , 
+simple, para buscar mejores resultados, ahora que tenemos una nocion basica de 
+cómo google realiza sus búsquedas, tenemos que adaptarnos a lo que hace, por 
+ejemplo si ponemos “programacion en c++ linux” , nos saldran pocos resultados , 
+y ni si quiera contienen lo que estamos buscando, ya que pocas paginas se 
+expresan asi, pero si ponemos “programacion en c++” linux nos saldran muy buenos 
+, sabemos que esas palabras juntas no tienen mucho sentido , pero la frase y la 
+palabra por separado nos dan muy buenos resultados, practicando un poco podran 
+comprenderlo mejor, es cuestion de visualizar como seria mas o menos los 
+resultados de nuestra búsqueda, que palabras deberian estar juntas y cuales no 
+pero aun asi incluirlas en la búsqueda para filtrar un poco los temas.<br>
+<br>
+Otra forma de buscar por frases es con el operador “.” (punto) , la búsqueda 
+“programación en c++” equivale a programacion.en.c++ cada palabra separada de la 
+otra por un punto y sin espacios, la búsqueda que hicimos antes :<br>
+“programacion en c++” linux<br>
+equivale a:<br>
+programacion.en.c++ linux<br>
+<br>
+Tambien podemos usar comodines dentro de las frases , eso se hace con el 
+operador “*”si ponemos “* palabra1 palabra2” buscara paginas que contengan una 
+palabra cualquiera mas palabra1 y palabra2 EN UNA MISMA FRASE ya que si no no 
+tendria sentido usar comodines si no es para frases, por eso ponemos la búsqueda 
+entre comillas<br>
+<br>
+Prueben con las siguientes búsquedas y se ubicaran mucho mejor:<br>
+“download gba roms”<br>
+“download * roms”<br>
+“* gba roms”<br>
+“download gba *<br>
+<br>
+<br>
+<b>El operador “+” :</b><br>
+<br>
+Algo muy importante que puede alterar el resultado de nuestra búsqueda , es que 
+google nos incluye todo lo que le mandamos a buscar, me explico, ignora algunas 
+parabras que para este son “obvias” pero al no tomarlas en cuenta puede alterar 
+el resultado de nuestra búsqueda.<br>
+<br>
+Por ejemplo busquen esto “el patito feo cuentos” (sin comillas por que al poner 
+comillas obligamos a google a buscar esa frase con todos los caracteres 
+contenidos en ella asi que no ignorara nada dentro de las comillas).<br>
+<br>
+Los resultados que salieron son buenos, pero tengan en cuenta que se obtuvieron 
+sin haber tomado en cuenta algunas palabras, pongan ahora: “patito feo de 
+cuentos” (sin comillas ¬¬ ) , y que pasa?<br>
+<br>
+Los mismos resultados no? , lo que pasa es que google ignora ciertos articulos 
+como “el” “la” , etc o palabras que para google son “obvias”. <br>
+Prueben poniendo “patito feo cuentos de el” (los articulos en desorden a 
+proposito solo para que vean que google los ignora) , y el resultado es el mismo 
+que si pusieramos “patito feo cuentos”<br>
+<br>
+Pero que pasa si necesitamos incluirlos en nuestra busqueda? , podemos forzar a 
+google a hacerlo mediante el operador “+” antes de la palabra a incluir, por 
+ejemplo pongan<br>
+“+el patito feo cuentos” , vemos que google ya marca con negrita “el” y los 
+resultados son diferentes a “patito feo cuentos” si le quitaramos el “+” a “el” 
+es como si no lo estuvieramos poniendo, vemos que esto influyo en los resultados 
+no a gran escala pero lo hizo y al comprender todos los operadores de google 
+podemos realizar búsquedas lo mas precisas posible asi el operador influya 
+minimamente puede ser de gran utilidad.<br>
+<br>
+<b>El operador “-” :</b><br>
+<br>
+Al contrario de el operador + , lo que hace este operador es excluir una palabra 
+de la búsqueda, a veces cuando buscamos sobre un tema en especifico, hay 
+palabras que buscamos que tambien que se usan en otros temas que no son de 
+nuestro interes, y al excluir ciertas palabras clave del otro tema tendremos un 
+resultado mejor filtrado y mas preciso.<br>
+Por ejemplo escriban : “patito feo” (adivinen …. Sin comillas!! ) y veran un 
+resultado parecido al anterior, que habla de cuentos y blabla …<br>
+Ahora pongan “patito feo –cuentos” y veran que los resultados cambian 
+completamente, incluso vemos paginas que ni hablan de cuentos por mas de que 
+esta frase casi solo se usa en el tema de cuentos pero tambien puede que estemos 
+buscando patitos feos de verdad xD , entonces ese operador nos facilitara mucho 
+la operación.<br>
+<br>
+<b>Operadores avanzados.-</b><br>
+<br>
+Estos operadores son muy utiles, nos permiten especificar bastantes cosas que 
+pueden alterar completamente la búsqueda y ofrecernos una precision muy buena,
+<br>
+la manera de escribirlos generalmente es : “operador:argumento(s)” (sin comillas 
+como ya habran sospechado) , para encontrar una lista completa de los operadores 
+aquí veremos algunos:<br>
+<br>
+<b>Operador site:</b><br>
+<br>
+Realiza búsquedas SOLO EN EL SITIO ESPECIFICADO, o sea este operador busca 
+solamente en el sitio que se uso como argumento del operador site.<br>
+<br>
+Por ejemplo pongan “Programacion site:neosecurityteam.net” …..SIN COMILLAS ;)<br>
+<br>
+Busca el termino programación en SOLAMENTE en el sitio neosecurityteam.net<br>
+<br>
+Lógicamente pueden usar los operadores antes vistos y convinarlos con los que 
+vayamos viendo para lograr búsquedas mas filtradas y precisas<br>
+<br>
+Tambien se puede usar el comando site para encontrar dominios, por ejemplo 
+pongan: “site:net neosecurity” , les encontrara el dominio neosecurityteam.net 
+asi como muchos otros que coinciden con las caracteristicas del dominio que 
+estamos buscando , tambien quiero aclararles que si ponen site:net buscara 
+dominios con los otros parámetros de búsqueda , solo buscara en dominios .net , 
+es por eso que encontro la url neosecurityteam.net , recuerden que google se 
+basa en la url, titulo, contenido y meta info para realizar sus busquedas<br>
+<br>
+<br>
+<b>Operador link:</b><br>
+<br>
+Este operador encuentra paginas que contengan links (vinculos o enlaces) hacia 
+la pagina introducida como parámetro<br>
+<br>
+Por ejemplo pongan: “link:nintendo.com” <br>
+<br>
+El resultado seran paginas que contengan enlaces a nintendo.com<br>
+<br>
+<b>Operador intitle:</b><br>
+<br>
+Busca paginas que contengan la palabra introducida como argumento en el titulo, 
+por ejemplo busquen “intitle:juegos pc” , y veran que todos los titulos 
+coinciden con al menos una de los argumentos<br>
+<br>
+<br>
+<b>Operador allintitle:</b><br>
+<br>
+Este es mas estricto que el anterior, ya que busca paginas que contengan TODOS 
+LOS ARGUMENTOS en el titulo , pongan esto “allintitle:juegos pc” , solo buscara 
+paginas que tengan juegos y pc en el titulo , si una pagina contiene solo uno de 
+los argumentos la excluira de los resultados<br>
+<br>
+<br>
+<b>Operador filetype:</b><br>
+<br>
+Busca resultados solamente en el formato de archivo que se le dio como parámetro, 
+por ejemplo pongan “filetype:pdf hacking” encontraran varios pdf de hacking 
+usando las sentencias y operadores adecuados pueden encontrar excelentes 
+manuales como ya se habran podido dar cuenta<br>
+<br>
+<b>Operador inurl:</b><br>
+<br>
+Busca paginas que contengan la palabra introducida como argumento en la url, por 
+ejemplo busquen “inurl:network hacking” y buscara paginas que contengan 
+networking y/o hacking en la url<br>
+<br>
+<br>
+<b>Operador allinurl:</b><br>
+<br>
+Supongo que ya se daran cuenta, busca paginas que tengan todos los argumentos 
+introducidos , si no estan todos los quita de los resultados, prueben con <br>
+“allinurl:network hacking” y veran que los resultados son muy diferentes.<br>
+<br>
+<br>
+<b>Operador cache:<br>
+</b>
+<br>
+Muestra la versión cache que tiene google de la pagina, me explico un poco mejor, 
+cuando google añade una pagina a su base de datos guarda una versión cache de 
+ella , o sea una copia temporal en sus servidores si la pagina esta offline por 
+el momento se puede acceder a la versión cache de google para leer algun 
+articulo que contenia, etc, pero el cache de google se actualiza cada 
+determinado tiempo, asi que la copia temporal que tiene google de una pagina 
+puede estar desactualizada, pero en ciertos casos es muy util.<br>
+<br>
+Prueben con “cache:neosecurityteam.net” y les mostrara la copia que tiene google 
+de neosecurityteam.net<br>
+<br>
+<br>
+<b>Operador info:</b><br>
+<br>
+Mostrara la información que tiene google sobre determinado sitio web<br>
+Prueben con “info:neosecurityteam.net”<br>
+<br>
+<br>
+<b>Operador define:</b><br>
+<br>
+Nos da la definición de la palabra pasada como argumento prueben con<br>
+“define:lammer” ….espero que ninguno de ustedes coincida con la definición xD<br>
+<br>
+<br>
+<b>Operador intext:</b><br>
+Busca paginas que tengan los argumentos buscados en el texto , o sea en el 
+contenido del sitio<br>
+Prueben con “intext:networking basics”<br>
+<br>
+<b>Operador allintext:</b><br>
+<br>
+Busca sitios que en su contenido tengan TODOS LOS ARGUMENTOS si uno de ellos no 
+esta no lo incluira en los resultados<br>
+<br>
+Prueben con “allintext:networking basics” y vean la diferencia con el anterior<br>
+<br>
+Google como calculadora.-<br>
+Prueben buscando:<br>
+e+pi<br>
+2*2<br>
+2+2<br>
+sin(180)/cos(90)<br>
+ln(e^8)<br>
+<br>
+Existen algunos operadores mas, pero estos son los mas importantes según pienso, 
+pero si quieren mas información sobre los operadores de google visiten http://www.google.com/help/operators.html<br>
+<br>
+Con esto ya deberian ser capaces de realizar potentes búsquedas, bien filtradas 
+de acuerto a los temas que les interese, esto les ayudara bastante, encontraran 
+mucho mas facil las cosas en internet, y no solo encontraran lo que buscan de 
+acuerdo al uso que le den tambien encontraran información de calidad.<br>
+<br>
+<b>Risks.-</b><br>
+<br>
+Bueno después de conocer como utilizar esta potente herramienta me imagino que 
+ya tienen en mente los riesgos existen, veamos algunos ….<br>
+<br>
+<u><b>Riesgos para la persona que busca información.-</b></u><br>
+<br>
+Existen ciertos riesgos sobre todo al buscar cosas gratuitas, <b>esto no es 
+propiamente de google pero usan google para atraer mas gente.</b><br>
+<br>
+Explicandome mejor, existen paginas que solo son utilizadas con el fin de 
+infectar a la gente de spyware, pero a quien le gustaria visitarlas? xD , bueno 
+para eso usan a google para hacer su sitio mas popular en base a ciertos temas 
+que son de interes de la gente, con un ejemplo lo entenderan mucho mejor, pongan 
+en google: “download roms” miren que sale una lista de paginas, algunas de 
+verdad tienen roms , pero me gustaria citar un resultado como este:<br>
+<br>
+<u>free <b>download</b>, <b>download </b>mp3, software <b>download</b>, <b>download</b></u><br>
+... <b>download download</b> acrobat <b>download</b> crack <b>download</b> nero putty 
+<b>download</b> roms<br>
+<b>download</b> dll <b>download</b> cd <b>download</b> game <b>download</b> antivirus 
+<b>download download</b> ...<br>
+<font color="#00FF00">www.*******.com/download.htm - 52k</font> - En caché - Páginas similares<br>
+<br>
+si se fijan no solo tiene roms, tienen cracks, antivirus, games , mp3 , etc, 
+cosas que la gente esta interesada en descargar y este sitio como por harte de 
+magia tiene todo ademas es “free!!”<br>
+<br>
+<br>
+Por que no hacer clic al vinculo de un magico sitio como este?<br>
+<br>
+Simple, es imposible que un sitio te ofrezca todo eso y gratis, simplemente es 
+una trampa para que hagas clicks en los vinculos dentro de esa pagina y quedes 
+infectado, con eso ellos pueden sacar muchos beneficios, tus passwords, cc , etc 
+.<br>
+<br>
+Lo que podemos observar en la descripción de ese vinculo no es nada mas que un 
+texto añadido al fondo de la pagina, para que google lo ponga en mejor puesto de 
+búsqueda de acuerdo a esos temas, seguro que su meta tambien contiene esos temas 
+pero en realidad el sitio no contiene nada mas que trampas para que nos 
+infectemos con spyware, nos podemos dar cuenta de sitios como este viendo que 
+las palabras que mas buscaríamos se repiten, miren por ejemplo cuantos 
+“download” hay , por eso es que salio en un buen puesto pero en realidad no hay 
+nada mas que descargar que spyware, ademas nosotros buscamos roms no mp3 ni dll 
+ni antivirus pero esa pagina incluye un texto con eso para que cualquier persona 
+que ponga download mp3 tambien le aparezca esa pagina …..vean como uso el titulo, 
+la url y el contenido para escalar puestos en google aunque no tenga nada de lo 
+que dice tener ….<br>
+supongo que ya sabran como darse cuenta de este tipo de paginas, es muy 
+peligroso sobre todo usando sistemas operativos y navegadores inseguros.<br>
+Una buena forma de evitar que salgan esas paginas “basura” es filtrando mejor 
+nuestra búsqueda pueden poner “download roms -mp3 –software” y ya no saldran 
+paginas como la anterior, pueden especificar roms para que consola , etc asi 
+encontraran sitios que realmente sean del tema , aunque siempre tienen que estar 
+cautelosos de que sitios visitan, siempre tengan en mente que paginas que ni si 
+quiera contienen un poco de lo que estan buscando salen en mejor puesto en 
+google debido a que los “webmasters” de las paginas basura conocen los metodos 
+de búsqueda de google mejor que los webmasters de las paginas que nos interesan, 
+asi que filtrar nuestra búsqueda nos ayudara a conseguir mejores resultados y 
+reducira los riesgos de visitar paginas como esta, bueno la seguridad al navegar 
+en internet tiene muchisimos aspectos a tomar en cuenta pero no me saldre del 
+tema de este articulo que es google.<br>
+<br>
+<b>Risks for webmasters (google hacking) .-</b><br>
+<br>
+Me imagino que ya tendran una nocion de esto, con los terminos apropiados 
+podemos encontrar paginas, archivos, bases de datos, etc que contengan 
+información de gran importancia, pero esto es causa de la mala configuración de 
+los sitios web, que quede claro que con google no se hackea, si no se encuentran 
+descuidos de los webmasters que pueden llevar a eso.<br>
+<br>
+Usando nuestros conocimientos de búsquedas bien filtradas probemos algunas 
+búsquedas que pueden comprometer la seguridad de un sistema , generalmente 
+debido a la mala configuración o pocas medidas de seguridad<br>
+<br>
+<br>
+Prueben buscando:<br>
+<br>
+“filetype:mdb users”<br>
+<br>
+el tipo mdb significa Microsoft data base , que es una base de datos creada por 
+la aplicación Microsoft access , antiguamente tambien usada en interfaces web, 
+la desventaja de esto es que toda la base de datos esta en un archivo legible, 
+pero esa no es escusa si se quiere usar este sistema se puede encriptar , poner 
+passwords , poner permisos a la carpeta en la que esta con .htaccess para que 
+nadie que conozca la url pueda descargarlo ,….en fin tenemos muchas medidas de 
+seguridad que podemos tomar pero como este mundo es enorme siempre abran 
+personas que no toman las debidas medidas y por lo tanto datos importantes 
+quedan expuestos….<br>
+<br>
+<br>
+Uno de los links de la búsqueda me descargo una base de datos llamada users.mdb 
+, aquí tienen una tabla :<br>
+<br>
+NOTA: los passwords los cambie por **** , no estaban encriptados ni nada por lo 
+cual podria exponer alguna información valiosa para terceras personas<br>
+<br>
+&nbsp;<table class="MsoNormalTable" border="1" cellspacing="0" cellpadding="0" style="background: white" id="table1">
+	<thead>
+		<tr>
+			<td colspan="2" style="border: medium none; padding: .75pt; background: silver">
+			<p class="MsoNormal" align="center" style="text-align:center"><b>
+			<span lang="ES" style="font-family:Arial;color:black">tblUsers</span></b></td>
+		</tr>
+		<tr>
+			<td style="border: 1.0pt inset black; padding: .75pt; background: silver">
+			<p class="MsoNormal" align="center" style="text-align:center"><b>
+			<span lang="ES" style="font-size:10.0pt;font-family:Arial;color:black">
+			UserID</span></b></td>
+			<td style="border: 1.0pt inset black; padding: .75pt; background: silver">
+			<p class="MsoNormal" align="center" style="text-align:center"><b>
+			<span lang="ES" style="font-size:10.0pt;font-family:Arial;color:black">
+			Password</span></b></td>
+		</tr>
+	</thead>
+	<tr>
+		<td valign="top" style="border: 1.0pt inset silver; padding: .75pt">
+		<p class="MsoNormal">
+		<span lang="ES" style="font-size:10.0pt;font-family:Arial;
+  color:black">lersak</span></td>
+		<td valign="top" style="border: 1.0pt inset silver; padding: .75pt">
+		<p class="MsoNormal">
+		<span lang="ES" style="font-size:10.0pt;font-family:Arial;
+  color:black">*****</span></td>
+	</tr>
+	<tr>
+		<td valign="top" style="border: 1.0pt inset silver; padding: .75pt">
+		<p class="MsoNormal">
+		<span lang="ES" style="font-size:10.0pt;font-family:Arial;
+  color:black">natapol</span></td>
+		<td valign="top" style="border: 1.0pt inset silver; padding: .75pt">
+		<p class="MsoNormal">
+		<span lang="ES" style="font-size:10.0pt;font-family:Arial;
+  color:black">*****</span></td>
+	</tr>
+	<tr>
+		<td valign="top" style="border: 1.0pt inset silver; padding: .75pt">
+		<p class="MsoNormal">
+		<span lang="ES" style="font-size:10.0pt;font-family:Arial;
+  color:black">paisarn</span></td>
+		<td valign="top" style="border: 1.0pt inset silver; padding: .75pt">
+		<p class="MsoNormal">
+		<span lang="ES" style="font-size:10.0pt;font-family:Arial;
+  color:black">*****</span></td>
+	</tr>
+	<tr>
+		<td valign="top" style="border: 1.0pt inset silver; padding: .75pt">
+		<p class="MsoNormal">
+		<span lang="ES" style="font-size:10.0pt;font-family:Arial;
+  color:black">rasu</span></td>
+		<td valign="top" style="border: 1.0pt inset silver; padding: .75pt">
+		<p class="MsoNormal">
+		<span lang="ES" style="font-size:10.0pt;font-family:Arial;
+  color:black">*****</span></td>
+	</tr>
+	<tr>
+		<td valign="top" style="border: 1.0pt inset silver; padding: .75pt">
+		<p class="MsoNormal">
+		<span lang="ES" style="font-size:10.0pt;font-family:Arial;
+  color:black">thailand</span></td>
+		<td valign="top" style="border: 1.0pt inset silver; padding: .75pt">
+		<p class="MsoNormal">
+		<span lang="ES" style="font-size:10.0pt;font-family:Arial;
+  color:black">*****</span></td>
+	</tr>
+	<tr>
+		<td valign="top" style="border: 1.0pt inset silver; padding: .75pt">
+		<p class="MsoNormal">
+		<span lang="ES" style="font-size:10.0pt;font-family:Arial;
+  color:black">wara</span></td>
+		<td valign="top" style="border: 1.0pt inset silver; padding: .75pt">
+		<p class="MsoNormal">
+		<span lang="ES" style="font-size:10.0pt;font-family:Arial;
+  color:black">*****</span></td>
+	</tr>
+</table>
+<p><br>
+<br>
+Como ven ahora en esa pagina pudiera loguearme con el user que veo ahí y los 
+passwords por que se que su aplicación lee los ids y contraseñas de esas bases 
+de datos, dependiendo de su aplicación cada usuario puede tener mas o menos 
+permisos , puede haber uno con permisos de dejarme hacer cosas que perjudicarian 
+bastante la pagina o simplemente podria perjudicar a los usuarios cambiando la 
+contraseña , se puede hacer bastantes cosas “malas” pero como personas con etica 
+que somos no tocaremos nada, recuerden que el objetivo de este articulo es ver 
+como google nos puede dejar vulnerables si no configuramos bien nuestros 
+servidores o si no tomamos medidas de seguridad.<br>
+<br>
+Cuando un hacker va a atacar un sistema , lo primero que se hace es ver que 
+sistema operativo se esta atacando, que aplicación, servicio, etc … si 
+quisieramos atacar un servidor web , tendriamos que empezar por conocer su 
+versión, este generalmente nos lo da la cabecera http en caso de que el servidor 
+sea un servidor web, pero tambien podemos conseguir esa información con google 
+mediante directory listing:<br>
+<br>
+<br>
+allintitle:&quot;index of / *&quot; <br>
+<br>
+<br>
+<br>
+al encontrar un directory listing, al fondo vemos :<br>
+<br>
+Apache/2.0.40 Server at www.****.**.** Port 80<br>
+<br>
+Algunos dicen incluse el sistema operativo:<br>
+<br>
+Apache/2.0.46 (Red Hat) Server at www.****.**.**.** Port 80<br>
+<br>
+On incluso mas datos, como los modulos:<br>
+<br>
+Apache/2.0.50 (Unix) mod_ssl/2.0.50 OpenSSL/0.9.7d Server at www.***.** Port 80<br>
+<br>
+Esto se puede prevenir con la correcta configuracion del servidor para que no 
+muestre ninguno de estos datos aun encontrando un directory listing, encontre 
+varios directory listing que no daban ninguna informacion debido a que estaban 
+bien configurados, pero aun asi el directory listing puede se run poco peligroso 
+asi que conviene evitar este problema poniendo un index en cada carpeta , bueno 
+ya depende de cada uno como se protege pero ahí tenemos lo que podemos estar 
+revelando que un atacante podria usar en contra nuestra<br>
+<br>
+Podemos encontrar directory listings mucho mas peligrosos:<br>
+<br>
+allintitle:&quot;Index of /admin&quot;<br>
+<br>
+Tambien podemos encontrar admin logins:<br>
+<br>
+“inurl:admin intitle:login”<br>
+<br>
+o especificando el script que nos loguee:<br>
+<br>
+“filetype:asp inurl:admin intitle:login”<br>
+<br>
+Tambien podemos encontrar archivos con informacion susmamente comprometedora:<br>
+<br>
+filetype:ini inurl:&quot;serv-u.ini&quot;<br>
+<br>
+miren:<br>
+<br>
+<font face="Verdana" size="1">[USER=harryyu]<br>
+Password=ebK7xaEg44n5Y<br>
+HomeDir=c:\<br>
+Access1=c:\,RWMCDLEP<br>
+Access2=d:\,RWMCDLEP<br>
+<br>
+Otra búsquedas parecidas:<br>
+<br>
+filetype:ini inurl:&quot;ws_ftp.ini&quot;<br>
+filetype:ini ws_ftp pwd</font><br>
+<br>
+como pueden ver hay bastantes sitios mal configurados, dependiendo de tu 
+conocimiento de los archivos que ofrezcan información potencial o de los 
+directorios que la contengan de acuerdo a la aplicación puedes encontrar 
+bastantes cosas …..<br>
+<br>
+<br>
+hay algunos sitios que estan bien configurados aunque en los resultados de 
+google no lo parezca y no te permiten ver los ficheros:<br>
+<br>
+<b><font size="6">Forbidden</font></b></p>
+<p><br>
+You don't have permission to access /***/***/WS_FTP/WS_FTP.ini on this server.<br>
+<br>
+Pero aparecio en los resultados de google , eso quiere decir que alguna vez 
+estuvo mal configurado por eso se expuso su url , entonces vemos la versión 
+cache del resultado y nos encontramos en el ws_ftp.ini<br>
+<br>
+NOTA: Reemplace los uids y passwords con ***** para no exponer ninguna 
+información que pueda perjudicar a terceros<br>
+<br>
+<br>
+<br>
+[plasmus]<br>
+HOST=plasmus <br>
+UID=*******<br>
+<b>PWD</b>=*******<br>
+TYPE=6003<br>
+LOCDIR=c:<br>
+DIR=/home/christer<br>
+PASVMODE=0<br>
+[quasarionogrm]<br>
+HOST=quasar<br>
+UID=*****<br>
+<b>PWD</b>=*******<br>
+LOCDIR=c:<br>
+PASVMODE=0<br>
+[ionogram]<br>
+HOST=u2<br>
+UID=******<br>
+<b>PWD</b>=******<br>
+LOCDIR=c:\ionogram<br>
+DIR=/home/ionogram<br>
+PASVMODE=0<br>
+[sound]<br>
+HOST=u2<br>
+UID=******<br>
+<b>PWD</b>=******<br>
+LOCDIR=c:\fromnt2\myJava\<br>
+DIR=/home/ionogram<br>
+PASVMODE=0<br>
+<br>
+<br>
+Como ven aunque lo hayan configurado recientemente para que no deje acceder al 
+fichero .ini , este se encontraba en el cache de google tambien, lo cual sigue 
+exponiendo su información valiosa<br>
+<br>
+Miren otra búsqueda revelante:<br>
+<br>
+intitle:&quot;Index of&quot; master.passwd<br>
+<br>
+Con esto ya se habran dado cuenta de la magnitud de configurar mal los 
+servidores en internet, de dejar información valiosa innecesaria en la web, y de 
+no encriptar la información.<br>
+<br>
+Google nos puede servir como una herramienta para mejorar la seguridad de 
+nuestra web , pero si no somos cautelosos podemos exponer datos cruciales.<br>
+<br>
+<br>
+Les dejo algo interesante, pueden encontrar camaras, si estan con ganas de mirar 
+algunas aquí les tengo unas búsquedas interesantes<br>
+<br>
+intitle:&quot;Active Webcam Page&quot;<br>
+<br>
+intitle:&quot;Live View / - AXIS&quot; OR inurl:view/view.shtml<br>
+<br>
+inurl:&quot;MultiCameraFrame?Mode=&quot;<br>
+<br>
+inurl:LvAppl intitle:liveapplet<br>
+<br>
+<br>
+se puede ver varias calles, bóvedas , etc <br>
+<br>
+Es importante no jugar con esto, recuerden que si se dedican a espiar pueden 
+ganarse muchos problemas , usen esto para medir la seguridad de sus sitios web, 
+pueden enseñar a otros la importancia de esto, pero nunca les recomiendo hacerce 
+al hacker con esto, por que los pueden coger fácilmente con unos servidores 
+especiales: los honeypots<br>
+<br>
+Un honeypot es una computadora dedicada a atrapar a gente que se dedica a 
+realizar este tipo de acciones, si te esmeras en buscar passwords para entrar a 
+ciertos sistemas solo por diversión, nada raro que caigas en uno de esos 
+honeypots que capturan todos tus datos , tal vez creas que “hackeaste” un 
+sistema… pero en realidad caiste en una linda trampa =) , asi que mucho cuidado 
+con eso.<br>
+<br>
+Si eres webmaster para encontrar todo lo que necesitas para añadir tu web a la 
+base de datos de google o para quitarla visita la siguiente direccion:<br>
+<br>
+<a href="http://www.google.com/webmasters/">http://www.google.com/webmasters/</a><br>
+<br>
+tambien te recomiendo leer:<br>
+<br>
+<a href="http://www.google.com/about.html">http://www.google.com/about.html</a><br>
+<a href="http://www.google.com/faq.html">http://www.google.com/faq.html</a><br>
+<br>
+<br>
+<br>
+<br>
+Con esto llegamos al fin de este articulo, espero haya sido de su agrado y lo 
+mas importante: que hayan podido comprender la magnitud de exponer información 
+en internet, visitar paginas que nos ofrecen maravillas y la excelente 
+herramienta de búsqueda que es google, espero que de ahora en adelante seas 
+capaz de encontrar lo que buscas sin depender de nadie <br>
+<br>
+<br>
+<br>
+Algunas fuentes consultadas:<br>
+<br>
+<br>
+Mi Cerebro <br>
+<a href="http://www.google.com">http://www.google.com </a> <br>
+<a href="http://johnny.ihackstuff.com">http://johnny.ihackstuff.com</a><br>
+<br>
+<br>
+<br>
+<br>
+Si tienes alguna duda, comentario o critica , no dudes en hacernosla saber, 
+participando en los foros de [NST] http://www.neosecurityteam.net/foro.php <br>
+<br>
+Si te gusto este articulo mantente al pendiente en http://www.neosecurityteam.net<br>
+que mientras nos sea posible seguiremos haciendo mas ;) <br>
+<br>
+<br>
+Saludos a todos, hasta la proxima!<br>
+<br>
+&nbsp;</p>
+</p>
+
+
+</html>

