@@ -1,0 +1,56 @@
+Haciendo un scanner de puertos en Perl
+--------------------------------------
+
+[+] 0x07 - El scanner [+]
+
+--------------------------------------
+
+
+[-] El scanner
+----------
+
+	A veces es demasiado engorroso tener que bajar un scanner de pu
+ertos y como no es muy dificil hacer uno, acá les dejo uno. El programa
+ básicamente lo que hace es tomar el host, el puerto de inicio y el de 
+fin del rango de puertos a scanear, valores pasados por la línea de com
+andos por el cliente. Comprueba que el rango sea válido y mediante un b
+ucle scanea los puertos. Si se puedo establecer la conexión sin problem
+as, imprime que el puerto está abierto.
+	Les dejo el código con los comentarios por si quedó alguna duda
+.
+
+#Especificamos la ruta del intérprete de perl (c:/perl/bin/perl.exe si
+#están en Windows o el directorio donde tengan al intérprete
+
+#!/usr/bin/perl
+use IO::Socket; #Cargamos el módulo para poder manejarnos con sockets
+if (@ARGV<3) { #Compruebo que estén todos los argumentos
+print "Usage: ./scanner.pl host port_inicio port_fin\n\n";
+exit();
+}
+else {
+$host=$ARGV[0]; #tomo el servidor a scanear
+$porti=$ARGV[1]; #puerto de inicio del rango
+$portf=$ARGV[2]; #puerto de fin del rango a scanear
+if ($portf<$porti) { #Compruebo que el rango sea válido
+print "El rango de puertos introducidos no es válido\n";
+exit();#Termina el programa si no es válido el rango
+}
+else {
+print "Port Scanner by Paisterist - Comenzando a escanear puertos\n";
+for ($port=$porti; $port<=$portf; $port++) {
+$socket=IO::Socket::INET->new(PeerAddr, "$host", PeerPort, "$port", Proto, "tcp");
+if ($socket) { #Compruebo que esté abierto el puerto
+print "Puerto abierto: $port\n";
+} 
+}
+}
+}
+
+	Este scanner es bastante lento y de hecho se pueden hacer cosas
+ para mejorarlo. Con este pequeño artículo lo único que hago es incenti
+varlos a aprender este potente lenguaje que es fácil, flexible, multipl
+ataforma y además muy potente. 
+	Espero que este pequeño código les sirva de algo.
+
+Paisterist

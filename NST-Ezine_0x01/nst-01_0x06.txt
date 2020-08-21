@@ -1,0 +1,81 @@
+
+
+                ฺฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฟ
+                ณ ÛฒฒฑฑฐฐÛ  ==[N]eo [S]ecurity [T]eam Inc.==  #0x01 ÛฐฐฑฑฒฒÛ ณ
+                ภฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤู
+
+ อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+ ฐฐฐฐฐฐฐฐฐฐฐฐฑฑฑฑฑฑฑฑฑฑฑฑฒฒฒฒฒฒฒฒฒฒฒฒฒฐฐฐฐฐฐฐฐฐฐฐฐฐฑฑฑฑฑฑฑฑฑฑฑฑฒฒฒฒฒฒฒฒฒฒฒฒฒฑฑฑฑฑฑฑฑฑฑฑฑฒฒฒฒฒฒฒฒฒฒฒฒฒฒ
+ อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+
+[+] 0x06 Ironic's Crackme [+]
+
+Utilizacion de Codigo Ascii, decimal, binario, hex.
+
+Ascii: HaCkZaTaN
+Hex: 4861436B5A6154614E
+Decimal: 1.33517413678813E+21
+Binario: 010010000110000101000011011010110101101001100001010101000110000101001110
+En ASM seria distinto como cualquier otro lenguaje hablo en general
+ASM: NOP
+Hex: 90
+Binario: 10010000
+Decimal: 144
+/////////////////
+ASM: push ebp
+Hex: 55
+Decimal: 85
+Binario: 01010101
+////////////////
+ASM: ret o retn
+Hex: c3
+Decimal: 195
+Binario: 11000011
+
+Utilizo OLLYDBG para esta explicacion.
+
+No lo voy a explicar de a mucho solo dare una solucion posible
+Cargamos el Crackme.
+Nos para en 004012EC
+Buscamos por API's que posiblemente guarden strings.
+vbaVarCopy << Encontramos estas.
+Colocamos un BP.
+Set Break point in every reference,
+F9
+en serial colocamos cualquier cosa yo coloque "hackedi"
+Registrar
+Y nos para en 0040732E es un call entoncnes entremos en el con F7
+Si quieres entrar entra pero dos offsets mas abajo vemos en 00407337
+que en el stack de abajo aparece el SERIAL con el que estamos comparando xD
+123 151 155 160 154 151 143 151 144 141 144
+0040734B >> Aqui el Ascii Value que habiamos ingresado "hackedi"
+Traceamos un poco con F8, Y vemos que llegamos a la linea abajo
+del call de arriba osea que en ese call no habia nada interesante.
+Seguimos traceando con F8, y vemos que:
+004074DF   . 66:85C0        TEST AX,AX
+004074E2   . B8 04000280    MOV EAX,80020004
+004074E7   . B9 0A000000    MOV ECX,0A
+004074EC   . 8985 5CFFFFFF  MOV DWORD PTR SS:[EBP-A4],EAX
+Comprueba si nuestro serial es el correcto con el encriptamiento de -Ironic-
+En el offset 004074EC vemos que en el stack de abajo aparece nuestro
+serial introducido encriptado a lo -Ironic- en mi caso aparecio
+150 141 143 153 145 144 151
+osea que esto sera igual a?
+150 141 143 153 145 144 151
+ h   a   c   k   e   d   i
+
+123 151 155 160 154 151 143 151 144 141 144
+Listo ahora lo que nos queda es hacer otra vex lo mismo de arriba pero con el ABC.
+Para poder mirar que fue lo que -Ironic- Escribio.
+Respuesta: S i m p l i c i d a d.
+
+Un Tip muy sencillo seria Nopear para poder entrar cualquier serial pero es mejor hacerlo
+por la parte mas larga para aprender mas y hacer un "challenge".
+
+BINARIO: http://www28.brinkster.com/ironicpage/Descargas/crackmes/crackme.zip
+
+ อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+ ฐฐฐฐฐฐฐฐฐฐฐฐฑฑฑฑฑฑฑฑฑฑฑฑฒฒฒฒฒฒฒฒฒฒฒฒฒฐฐฐฐฐฐฐฐฐฐฐฐฐฑฑฑฑฑฑฑฑฑฑฑฑฒฒฒฒฒฒฒฒฒฒฒฒฒฑฑฑฑฑฑฑฑฑฑฑฑฒฒฒฒฒฒฒฒฒฒฒฒฒฒ
+ อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+
+|---------------------==========================[ EOF ]==========================---------------------|

@@ -1,0 +1,202 @@
+
+
+                ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                ³ Û²²±±°°Û  ==[N]eo [S]ecurity [T]eam Inc.==  #0x01 Û°°±±²²Û ³
+                ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+ ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+ °°°°°°°°°°°°±±±±±±±±±±±±²²²²²²²²²²²²²°°°°°°°°°°°°°±±±±±±±±±±±±²²²²²²²²²²²²²±±±±±±±±±±±±²²²²²²²²²²²²²²
+ ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+
+[+] 0x05 Descubriendo las maravillas del printf, Format bugs, by T0wn3R. [+]
+---------------------------------------------------------------
+
+-Introducción y pre-requisitos-
+
+Mi objetivo es que comprendan una vez mas la inseguridad que puede haber si no sabemos los peligros del C.
+C es un lenguaje fuerte, superpoderoso sea el C, pero es dificil controlarlo, es difícil hacer las osas
+sabiendo que en cualquier descuido se revalzará la memoria... sabiendo que en cualquier momento nos probocarán
+un stack overflow, un format bug, un race condition.
+No pretendo dar instrucciones de como agarrar un programa en C y explotar un format bug de un día para el otro,
+intento ser lo mas claro posible pero eso no es suficiente... que mas se necesita?:
+
+(+)Conocimiento y manejo de Gcc.
+(+)Conocimiento y manejo de gdb.
+(+)Programación C.
+(+)Programación ASM.
+(+)Comandos *nix.
+
+como ven no son muchas cosas. Si realmente sabes todo esto no creo que tengas que releer mi texto, con una
+sola leida comprenderas a full todo lo que yo quice sobresaltar.
+
+para los que no saben... sigan leyendo este texto, pero no les garantizo que a la primera vez que lo lean
+salgan siendo unos juakersotes que pueden escribir un programa sin format bugs, o explotar uno que los contenga.
+
+No quiero dar explicaciones practicas sin dar el paso teorico, no tiene gracia que exploten algo que no saben ni
+lo que es ni porque lo estan podiendo explotar... por ejemplo, que gracia tendría que les diga:
+"compilen
+int main
+(int argc,char **argv)
+{ 
+printf(argv[1])
+} y ejecuten con %x%x%xid;" y ya con eso se supone que tienen su explicación jaja, bueno, pues no será asi,
+continuemos.
+
+
+
+-¿Qué es esto de un format bug?-
+
+Un format bug es un error que sucede por función printf(o de la familia, ver proximo capitulo) de cualquier
+lenguaje que las involucre. No necesariamente tiene que ser C, probablemente encontremos una web en php con
+este tipo de errores.
+Las funciones peligrosas en este caso son usadas para imprimir un resultado en pantalla y para esto requiere
+de dos parametros,el primero formatea la salida y el otro es para los parámetros formateados.
+Cuando se quiere imprimir solo una cadena, se llama erróneamente a esta función pasando como primer parámetro
+esta cadena, pudiendo en esta usar los modificadores para escribir en una zona concreta de la memoria del
+programa y pudiendo llegar a conseguir que el programa ejecute acciones no previstas... ya se imaginarán,
+por ahi vamos.
+
+
+3.- Funciones peligrosas y más comunes. ¿porqué?
+La mayoria de las veces que veamos un format bug sera por printf o alguna de su familia.
+Funciones de la familia de printf? sip, pueden ser sprintf, sprintf, snprintf, vsnprintf, vsprintf, vprintf.
+Pero no son las unicas, tambien hay funciones como setproctitke, syslog y write que resultan peligrosas.
+lo mas comun es que veamos simple y sencillamente printf.
+Pero bien, supongo que les gustaria saber porque estas son funciones peligrosas.
+Si eres de los que saben C, de seguro ya te has dado cuenta, estas funciones imprimen en pantalla, como ya
+he explicado en la parte 2. Pero bueno, ¿que hay de malo en imprimir en pantalla?. Lo malo no es imprimir
+en pantalla, mas bien lo malo es no especificar que formato de dato usaremos para esto. En el caso de printf
+no sabe donde terminan los argumentos entonces cuando hay una cadena nueva lee lo primero que ve en la pila.
+
+-Poniendo en práctica 1-
+
+Es poco lo que llevamos aprendido, pero lo pondremos en practica para comprender mejor.
+Entonces, lo que hemos visto son funciones peligrosas. veamos como encontramos a estas funciones peligrosas en C:
+
+	void main()
+	{
+            char tmp[512];
+            char buf[512];
+
+            while(1) {
+              memset(buf, '\0', 512);
+              read(0, buf, 512);
+              sprintf(tmp, buf);
+              printf("%s", tmp);
+            }
+	}
+
+típico programa, que tiene dos varibles tmp y buf, las dos de 512 bytes.
+
+              memset(buf, '\0', 512);
+              read(0, buf, 512);
+
+lee el input que escribe el usuario para colocarlo en buf y finalmente:
+
+              sprintf(tmp, buf);
+              printf("%s", tmp);
+
+llena tmp y lo imprime.
+
+Entonces vamos a ver que sucede al correr este programa:
+
+T0wn3R@linda3F:# gcc -o archivo archivo.c
+T0wn3R@linda3F:# ./archivo
+[...]
+%x %x %x %x
+27fac822 1ca21416 12345678...etcxDDDD (son inventados)
+y oh sorpresa!
+nos imprimir unos numeros hexa :x.
+en el caso este %x imprime valores hexadecimales de los argumentos. veamos que es esta %x....
+
+-Format Strings-
+%n, %f, %s, %d, %c, %p, %i... quiza hemos visto format strings (o cadenas de formato) anteriormente, y no
+sabiamos que significaban... para seguir adelante tendré que dar incapié en una breve descripción sobre que
+son los format strings, qué hacen, etc.
+Quizá los format strings ocupen un lugar e un proximo numero de la ezine, pero por ahora tendremos que
+conformarnos con esto.
+
+explcaré lo que hacen algunos fmtstrings.
+%n muy conocido y usado, escribe el numero de bytes impresos a la ubicación apuntada por el argumento.
+%x imprime el valor exadecimal del argumento.
+%s el caracter del string en la dirección de ésta.
+%d se usa para aumentar bytes..que interesante crear una salida "indeseada?" xD.
+%u tambien se usa para aumentar bytes pero probocara cualquier valor negativo que podría agregar - en el output.
+
+Si el programador no ajusta el formato correctamente, veremos un programa vulnerable a un format bug.
+
+por ejemplo: printf(string); solo dio la orden de imprimir el string y bue, toda la familia de printf tiene
+este mismo problema.
+
+veamos el famoso %n. Como ya he dicho escribe el número de bytes impresos a la ubicacion apuntada por el
+argumento. Cuando no hay argumento no hace nada xD, entonces escribe en la siguiente posicion de la pila.
+Por ejemplo lo podemos ver funcionando en un programa simple:
+
+  int main(int argc, char *argv[]) 
+ {
+    int num;
+
+    printf("%s%n\n", argv[1], &num);
+    printf("Bytes escritos: %p\n", num);
+  }
+
+donde imprimiremos un numero al ejecutarlo. por ejemplo ./programa 12345678 imprimira: Bytes escritos: 12345678
+Podríamos dar una direccion de memoria arbitraria ejecutando este codigo pero sigamos con el txt xD.
+
+-Beneficiandonos-
+
+veamos.
+
+int q;
+printf("AAAA%n",&q);
+q = 4 despues de eso
+
+lo que aremos es reemplazar las A por una dirección valida, aprovechando %n... sigamos.
+
+T0wn3R@linda3f# gdb --exec=a.out --symbols=ptest
+[...]
+(gdb) r
+Starting program: /tmp/temp/a.out
+
+Program received signal SIGTRAP, Trace/breakpoint trap.
+Cannot remove breakpoints because program is no longer writable.
+It might be running in another process.
+Further execution is probably impossible.
+0x8048090 in ___crt_dummy__ ()
+
+(gdb) break *main+60
+
+Breakpoint 1 at 0x804821c: file ptest.c, line 30.
+
+(gdb) break *main+65
+
+Breakpoint 2 at 0x8048221: file ptest.c, line 30.
+
+(gdb) c
+
+Continuing.
+---| principio |---
+0x12345678
+0xbffffb10
+0x6e257025
+0xbffffb00
+0x80480ee 
+---|  final  |---
+a.out  ejecuta ptest con \x10\xfb\xff\xbf%p%n como argumento, vemos que %p imprime la
+primera direccion y %n escribe a
+0xbfffb10.
+
+así  es que podemos sobreescribir casi todo en nuestro programa.
+
+-Apendice de Codigos peligrosos-
+
+Como ya hemos dicho, toda la familia de printf o cualquier funcion que imprima en pantalla
+puede ser causa de un format bug.
+
+
+ ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+ °°°°°°°°°°°°±±±±±±±±±±±±²²²²²²²²²²²²²°°°°°°°°°°°°°±±±±±±±±±±±±²²²²²²²²²²²²²±±±±±±±±±±±±²²²²²²²²²²²²²²
+ ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+      
+ 
+|---------------------==========================[ EOF ]==========================---------------------|

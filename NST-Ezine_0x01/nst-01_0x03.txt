@@ -1,0 +1,138 @@
+
+
+                ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                ³ Û²²±±°°Û  ==[N]eo [S]ecurity [T]eam Inc.==  #0x01 Û°°±±²²Û ³
+                ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+ ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+ °°°°°°°°°°°°±±±±±±±±±±±±²²²²²²²²²²²²²°°°°°°°°°°°°°±±±±±±±±±±±±²²²²²²²²²²²²²±±±±±±±±±±±±²²²²²²²²²²²²²²
+ ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+
+[+] 0x03 SQL INJECTION [+]
+-------------------
+
+[-] Introducción al SQL
+[-] Sintaxis de SQL
+[-] Inyeccion SQL
+[-] Consiguiendo Información
+[-] Potencialidad
+[-] Cómo Protegerse
+--------------------------------------------
+
+
+[-] Introducción al SQL [-]
+------------------------
+
+Debido a la gran interactividad que ha invadido a la web en los ultimos años, se han hecho cada vez más
+comunes los sitios, portales, foros u otros que interactúan activamente con los usuarios. Para que 
+ello sea posible, es necesario almacenar y manejar una gran cantidad de datos, para ese proposito 
+se han creado una variedad de bases de datos y entre las más comunes se encuentran MS Access,
+SQL Server, MySQL. Logicámente,  estas bases de datos son distintas entre sí, y por lo tanto cada una
+posee su propio lenguaje. El SQL (Structured Query Language) se crea como un estándar de comunicación
+entre las paginas (asp, php, etc) y las bases de datos, para poder trabajar indistintivamente con cada
+una de ellas.
+
+
+[-] Sintaxis de SQL [-]
+------------------
+
+Imagínemos que tenemos una pagina escrita en php con la cual podemos hacer una consulta a la base de datos
+de una empresa, para ello la pagina consta de un formulario en el cual hay un cuadro de texto en el que
+introducimos el nombre de un trabajador y nos retorna toda su información. Al hacer la consulta, se crea una
+setencia como esta:
+
+SELECT * FROM Trabajadores WHERE Nombre = 'Napoleon Bonaparte'
+
+Esta setencia busca en la tabla "Trabajadores" a algun trabajador con el "Nombre" Napoleon Bonaparte,
+si lo encuentra nos devuelve sus datos.
+
+Obviamente esto no es ni la centesima parte de todo lo que puedes hacer con SQL, pero es lo suficiente
+para entender las inyecciones. Si quieres profundizar más puedes buscar en google xD.
+
+
+[-] Inyeccion SQL [-]
+----------------
+
+Si un usuario mal intencionado (xD) en lugar de preguntar por los datos de Napoleon Bonaparte, pregunta por
+los datos de "Napo'leon Bonaparte", la setencia SQL que se generaría sería algo así:
+
+SELECT * FROM Trabajadores WHERE Nombre = 'Napo'leon Bonaparte'
+
+Al interpretear esta setencia, el servidor leería como nombre solamente "Napo", y lo demás lo interpretaría
+como un error. Basandonos en la comilla, podemos pasar más comandos SQL, logrando que el servidor haga lo
+que nosotros queramos.
+
+Ahora voy a explicar la famosa inyeccion para evadir autentificaciones con user y pass.
+Las paginas que emplean este tipo de autentificaciones, por lo general tienen un formulario con un campo
+para poner el user y otro para el password. Al ingresar los datos, se construye una sentencia similar a esta:
+
+SELECT * FROM usuarios WHERE user = 'daemon21' AND pass = 'nst'
+
+Si el nombre de usuario y el password coinciden con los almacenados en la base de datos, entonces entramos a
+la cuenta de daemon21. Usando las comillas, podemos ingresar sin necesidad de saber el password. Para esto,
+ingresamos un password como este ' OR '1' = '1,  se construye una setencia de esta foma:
+
+SELECT * FROM usuarios WHERE user = 'daemon21' AND pass = '' OR '1' = '1'
+
+Si te fijas, puede que el password no sea nulo, pero siempre 1 va a ser igual a 1, por lo tanto el valor
+de verdad (veáse lógica) de pass = '' OR '1' = '1' siempre va a ser verdadero y como el usuario daemon21
+está en la base de datos, toda la sentencia toma el valor verdadero y el servidor nos dará acceso.
+
+
+[-] Consiguiendo Información [-]
+-------------------------------
+
+La inyección sql tiene muchas más utilidades que las dadas en el ejemplo anterior, también se pueden
+modificar, borrar, robar, o hacer lo que se les ocurra con las bases de datos. Para eso, la mayoría de
+las veces necesitaremos los nombre de las tablas y de sus registros. Pero no siempre esos nombres son
+tan obvios como los de los ejemplos anteriores. Esto tiene solución. 
+
+Por ahora vamos a hacer uso de los comentarios sql de una linea -- (doble guión), de las comillas y de el
+comando HAVING para hacer que el server sql nos dé sus secretos. Una pequeña explicación: ya vimos que
+hacen las comillas; los comentarios hacen que todo lo que los siga dentro de la misma linea será ignorado
+por el server; y el comando having es similar a WHERE,
+y se utiliza para determinar que registros de determinada tabla se van a mostrar. 
+
+Sigamos con el ejemplo anterios, pero suponiendo que no conocemos los nombres de la tabla ni de sus registros.
+En el campo del usuario, inyectamos 'HAVING 1=1 --  La comilla es para terminar cualquier setencia "legal",
+having como parametro debe tener una condición lógica para ejecutarse y tiene que estar precedido por
+GROUP BY, y los guiones son para que se ignore cualquier cosa que siga.
+
+Con esa inyección, se construye una setencia similar a esta:
+
+SELECT * FROM xxxxxx WHERE xxxx = ''HAVING 1=1 --' AND xxxx = ''
+(Las xxxx son para denotar que no conocemos esos nombres)
+
+En esa cadena, el comando HAVING al no estar estar precedido por GROUP BY, no devolverá un error diciendo
+algo asi como que el error introducido en usuarios.user es incorrecto debido a que falta GROUP BY. Ahora
+sabemos que la tabla se llama "usuarios", y que el registro del username es "user". Para saber como se
+llama el registro del password simplemente se inyecta lo mismo en el campo del password, lo que nos
+devolvería el valor de usuarios.pass, con lo que concluimos que la tabla posee un registro "user" y otro "pass".
+
+Conociendo todos los nombres, se puede hacer practicamente de todo, sólo es cosa de saber manejar sql.
+
+
+[-] Potencialidad [-]
+----------------
+
+Ya practicamente no existen web que sean vulnerables en sus campos de loguin (pero aún es posible), sin
+embargo, siempre se siguen encontrando vulnerabilidades de este tipo en los paquetes php o asp precompilados
+como php-nuke, phpbb, post-nuke y otros. Dentro de esta misma publicación, Paisterist explica como explotar
+el bug de los phpbb 2.0.10, la cual también es vulnerable a este tipo de ataques, sólo que en lugar de usar
+el comando system(), se debe utilizar sql_query() para asi poder manejar directamente las bases de datos del
+servidor.
+
+
+[-] Cómo Protegerse [-]
+--------------------
+
+Lo más importante para evitar este tipo de ataques, es hacer un buen filtrado de todos los campos y de todas
+las variables que hagan consultas a la base de datos. Nunca se debe dejar que una variable interactue
+directamente con las bases de datos.
+
+ ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+ °°°°°°°°°°°°±±±±±±±±±±±±²²²²²²²²²²²²²°°°°°°°°°°°°°±±±±±±±±±±±±²²²²²²²²²²²²²±±±±±±±±±±±±²²²²²²²²²²²²²²
+ ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+      
+ 
+|---------------------==========================[ EOF ]==========================---------------------|

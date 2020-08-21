@@ -1,0 +1,237 @@
+
+
+                ฺฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฟ
+                ณ ÛฒฒฑฑฐฐÛ  ==[N]eo [S]ecurity [T]eam Inc.==  #0x01 ÛฐฐฑฑฒฒÛ ณ
+                ภฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤู
+
+ อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+ ฐฐฐฐฐฐฐฐฐฐฐฐฑฑฑฑฑฑฑฑฑฑฑฑฒฒฒฒฒฒฒฒฒฒฒฒฒฐฐฐฐฐฐฐฐฐฐฐฐฐฑฑฑฑฑฑฑฑฑฑฑฑฒฒฒฒฒฒฒฒฒฒฒฒฒฑฑฑฑฑฑฑฑฑฑฑฑฒฒฒฒฒฒฒฒฒฒฒฒฒฒ
+ อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+
+[+] 0x02 Race Conditions [+]
+
+[-] Teoria [-]
+
+Que es una "Race Condition"?
+
+Una "Race Condition" es un problema en el cual esta ralacionado cuando suceden las cosas. (Threads)
+Como si algo te pasara cuando estas con tu novia.
+[Es indevido se supone que todo debe de ser perfecto.]
+Entonces el resultado o la "Thesis" seria que un programa o binario que estamos esperando
+que aga lo que nosotros pedimos no lo que el quiera.
+
+
+
+
+En las cuales un proceso normalmente de bajo privilegio (User)
+durante un corto lapso se ejecuta con alto privilegio (root). 
+
+Otro ejemplo de "Race Condition" seria.
+Cuando estas ejecutando dos programas que se suponen que van juntos pero cuando abres el
+programa numero todo va bien pero cuando abrimos nuestro segundo programa causa un OverFlow
+o un Crash.
+
+Definicion de diccionario:
+El problema se genera de forma aleatoria produciendo un abrazo mortal (deadlock)
+entre todos los threads, datos inconsistentes o fallo del programa.
+
+
+Los xploits que aprovechan esta situaciones como estas pueden durar un segundo un minuto,
+un ano, nunca por que solo se activan una vez el root trate de ejecutar algo en el cual podemos crear cuentas
+UID 0 o sacar shells o etc.....
+
+[ ... ] 
+
+Cuando hablamos de un "Race Condition" hablamos de un SMP.
+En un "Source Code" el punto de de concurrencia es llamado region critica.
+
+Todas las arquitecturas tienen una peque๑a race condition en cada proceso hijo.
+
+]-[ Como solucionamos un "Race Condition"? ]-[
+
+Reconocer como y cuando ocurren las acciones tomadas a accesos simultaneos.
+Usar Bloqueos. Osea cuando estas haciendo un programa trata que solo una
+instacia pueda entrar a la region critica
+
+]-[ Como Bloqueamos? ]-[
+
+Bloqueamos con Semaforos y SpinLocks.
+
+
+El otro tipo seria por Semaforo lo encontramos en "include/asm/semaphore.h"
+Este tipo de Bloqueo es usado en un "MUTEX"
+Por que es llamado semaforo? Pues por que el actua como semaforo.
+Lo que hace es poner tus tareas o aplicaciones en una parte de tu memoria mientras otras se ejecutan
+pero esto es muy maluco seria mejor usar un "spinLock" en este caso.
+
+Lo mas comun es por SpinLocks lo encontramos en "include/asm/spinlock.h"
+en cual es conocido como bloqueos simples. Son muy pequenos y rapidos, y los puedes
+usar en cualquier sitio.
+
+
+Se me olvido comentar un Bloqueo no es la mejor cosa se pueda hacer pero si es muy bueno saber de todo
+esto.
+
+Como se hace un bloque?
+ CPU-1            CPU-2
+A > OK      >>  B > OK
+B > Spin    >>  A > Spin
+
+Lo que pasa aqui es que las dos CPUs estan esperando que cada uno libere su bloqueo.
+Extrano cierto. Por cierto Esto se llama DeadLock Cuando ahy fallos de codificacion y
+cuando tratan de obtener dos SpinLocks al mismo tiempo.
+
+Para poder utilizar todo esto tu Kernel deberia estar compilada con SMP
+osea con la opcion CONFIG_SMP Si no esta entonces como puedes probar tus "Race Conditions"?
+Es tiempo de habilitarla eso creo, no mentiras como tu quieras.
+"La practica lleva al maestro" Eso creo que asi dice el refran.
+
+Lo maluco de los Spinlocks y Semaforos es que tienen variantes de Lectura y Escritura.
+Osea Si lees no puedes escribir pero si escribes si puedes leer, es confuso pero con el tiempo le haces.
+Nombre de las Variantes: 
+                         rwlock_t y struct rw_semaphore.
+Los lectores pueden acceder de forma simultanea. Los escritores deben hacerlo de forma individual.
+
+
+
+]-[ Como bloqueamos el contexto de un usuario y un BHs? ]-[
+
+En el Heador de Semaforo tenemos funciones como:
+
+down_interruptible() >>> Cojemos el Semaforo.
+up(); >>> Liberamos semaforo
+down(); >>> Peligrosa mejor no usarla por que no regresa si se recive senal como un (Ping Pong)
+ Cuando inciaz los recursos disponibles lo empiezas con "1" usualmete es con el "1".
+
+Ahora utilizando spinlock bloqueamos los BHs con estas funciones.
+spin_lock_bh(); >> Bloqueamos un BH
+spin_unlock_bh() >> Desbloqueamos un BH
+
+Para mi es suficiente con todo esto pero si necesitas mas encontraras en tu Linux
+Documentation/spinlocks.txt >> /usr/src/linux >> osea tu Source de tu Kernel.
+
+[-] Ejemplos [-]
+
+]-[ Ejemplo 1 ]-[
+
+ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
+class UnsafeLogger
+{
+     private File f_file;  
+     public void write ( String M )
+     {
+          f_file.open ( "File.NfO" );
+          f_file.write ( M );
+          f_file.close ( );
+     }
+}
+ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
+
+En este pequeno porgrama de Java ahy un bug que cualquier programador lo ve de una.
+No sincronizamos nuestro File.
+
+Race Condition arreglado quedaria
+
+public void write ( String M )
+     {
+       synchronized( m_file )
+	     {
+                 ..........}}
+
+Synchronized no es realmente un semแforo sino que s๓lo una regi๓n crํtica 
+
+
+En C
+Pues Haber solo dare ejemplos.
+
+1.
+ strcpy(buff, ptr); // insecure coding!!!
+ strncpy(buff, sizeof(buff), ptr); // secure coding :)
+ Otro podra ser con
+
+2.
+ System Calls <<< Un peligro
+ Mas peligroso a un si lo utilizas por utilizando
+ Pero si es para hacer una shellcode o un xploit o un overflow si nos sirve
+
+3.
+ sprintf(buf,"Hola %s\n",remote_hostname);
+ Aqui nos podrian hacer un Buf por que no tenemos el peso de buf
+ entonces la solucion seria
+ sprintf(buf,"Hola %s\n",sizeof(buf),remote_hostname);
+
+4.
+ Otra seria la de no colocar Nulls al finalizar una Array
+ Ya se por '\0'  o NULL.
+
+5. 
+ No hacer algo directo para que sea mas duro de encontrarlo.
+ Hablo de ficheros
+
+ if(access("/src/usr",W_OK)==0) open(...);
+
+6.
+  Como hacer Locks de forma exclusiva
+  open(O_CREAT|O_EXCL);
+
+7. 
+  Ojo con los core. Ficheros de volcado de memoria
+
+8.
+ Si un usuario modifica las variables de entorno de:
+ "LD_LIBRARY_PATH" y "LD_PRELOAD"
+ Seria algo catastrofico. Podrian ver archivos y ejecutar binarios con codigo arbitrario.
+
+9. Ejecutar en un bucle  el programa vulnerable.
+
+#include <sys/stat.h>
+#include <unistd.h>
+
+int main(int argc, char **argv)
+{
+
+	if (argc < 2)
+	{
+		fprintf(stderr,"Format: %s <program>\n",argv[0]);
+		exit(-1);
+	}
+
+	while (1)
+	{
+		system(argv[1]);
+		system("rm -f fuk;ln -s /etc/elf fuk");
+	}
+	
+	return(0);
+}
+
+Solucion:
+
+char *filename;
+int fd;
+
+do {
+	filename = tempnam (NULL, "foo");
+	fd = open (filename, O_CREAT | O_EXCL | O_TRUNC | O_RDWR, 0600);
+	free(filename);
+} while (fd == -1);
+
+Crea un archivo con un nombre temporal en un bucle. A fuerza bruta.
+
+Ahy muchas pero estan son las mas comunes para ir empezando!!
+
+Nota: "Race Condition" = "Condicion de Carrera"
+
+      "SMP" = Symmetric Multi-Processor" = "Multi-Processor (Multi-Procesamiento Sim้trico)"
+      Explicacion basica. Nucleos compilados para maquinas con multiples CPUs.
+      
+      "BHs" = "Bottom Halves"
+ 
+                                                           By HaCkZataN
+
+ อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+ ฐฐฐฐฐฐฐฐฐฐฐฐฑฑฑฑฑฑฑฑฑฑฑฑฒฒฒฒฒฒฒฒฒฒฒฒฒฐฐฐฐฐฐฐฐฐฐฐฐฐฑฑฑฑฑฑฑฑฑฑฑฑฒฒฒฒฒฒฒฒฒฒฒฒฒฑฑฑฑฑฑฑฑฑฑฑฑฒฒฒฒฒฒฒฒฒฒฒฒฒฒ
+ อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+      
+ 
+|---------------------==========================[ EOF ]==========================---------------------|
